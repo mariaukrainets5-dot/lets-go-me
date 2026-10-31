@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>I Will Catch You</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,9 +11,12 @@
   --display: "Russo One", "Arial Black", sans-serif; --body: "Nunito", "Trebuchet MS", sans-serif;
 }
 html, body { position: fixed; inset: 0; width: 100%; height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: #2fa8f4; color: var(--ink); font-family: var(--body); font-weight: 800; -webkit-user-select: none; user-select: none; }
-canvas#c { position: fixed; left: 0; top: var(--vt, 0px); width: 100%; height: var(--vh, 100%); display: block; touch-action: none; }
+canvas#c { position: fixed; left: var(--vl, 0px); top: var(--vt, 0px); width: var(--vw, 100%); height: var(--vh, 100%); transform: scale(var(--vs, 1)); transform-origin: 0 0; display: block; touch-action: none; }
 /* Весь интерфейс живёт внутри видимой части экрана: на iPhone панели Safari её меняют. */
-#ui { position: fixed; left: 0; right: 0; top: var(--vt, 0px); height: var(--vh, 100%); z-index: 5; overflow: hidden; pointer-events: none; }
+#ui { position: fixed; left: var(--vl, 0px); top: var(--vt, 0px); width: var(--vw, 100%); height: var(--vh, 100%); transform: scale(var(--vs, 1)); transform-origin: 0 0; z-index: 5; overflow: hidden; pointer-events: none; }
+/* Двойной тап и два пальца не должны увеличивать страницу: на iPad от этого пропадали кнопки. Листать можно только панели. */
+html, body, #ui, #veil, #panel, #panelBody { touch-action: pan-y; }
+#hud, #goal, #pads, #acts, #talk, #toast, #panelHead { touch-action: none; }
 #ui > * { pointer-events: auto; }
 button, label.btn {
   font-family: var(--display); font-size: 16px; color: var(--ink); background: var(--sun); border: 3px solid var(--ink); border-radius: 14px;
@@ -90,6 +93,27 @@ input[type=text], input[type=number] { font-family: var(--body); font-weight: 90
   #talk p { font-size: 15px; } #talk i { display: none; }
   #titleCard h1 { font-size: 26px; } #titleCard img { display: none; }
 }
+/* Планшет: экран большой, кнопки и текст крупнее */
+@media (min-width: 744px) and (min-height: 600px) {
+  .chip { font-size: 17px; padding: 4px 12px; } .chip canvas { width: 20px !important; height: 20px !important; }
+  #hud { gap: 6px; } #menu { gap: 6px; }
+  #menu button { min-height: 60px; font-size: 14px; border-width: 3px; border-radius: 13px; box-shadow: 0 3px 0 var(--ink); } #menu button span { font-size: 22px; }
+  #mSound { font-size: 22px; }
+  #goal { top: calc(env(safe-area-inset-top, 0px) + 112px); font-size: 17px; padding: 6px 12px; }
+  #toast { top: calc(env(safe-area-inset-top, 0px) + 158px); font-size: 18px; }
+  #btnJump { width: 120px; height: 120px; font-size: 18px; } #btnFind { width: 92px; height: 92px; font-size: 16px; }
+  #acts button { min-height: 66px; min-width: 170px; font-size: 18px; } #acts small { font-size: 14px; }
+  #talk { width: min(760px, calc(100vw - 24px)); } #talk b { font-size: 19px; } #talk p { font-size: 22px; }
+  #panel { width: min(900px, 100%); } #panelHead h2 { font-size: 24px; } #panelHead button { font-size: 22px; padding: 6px 14px; } #panelBody { font-size: 18px; } #panelBody h3 { font-size: 20px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; } .tile { font-size: 15px; } .tile canvas, .tile img { width: 100px; height: 100px; }
+  .tabs button { font-size: 16px; padding: 9px 14px; } .note { font-size: 16px; }
+  #titleCard img { max-width: 460px; }
+}
+@media (min-width: 744px) and (min-height: 600px) and (min-aspect-ratio: 1/1) {
+  #menu { width: min(60vw, 620px); }
+  #goal { top: calc(env(safe-area-inset-top, 0px) + 50px); }
+  #toast { top: calc(env(safe-area-inset-top, 0px) + 96px); }
+}
 [hidden] { display: none !important; }
 </style>
 
@@ -142,16 +166,20 @@ function h(tag, props, ...kids) {
   return e;
 }
 const cv = $('c'), ctx = cv.getContext('2d');
-let W = 0, H = 0, DPR = 1, ZOOM = 1;
+let W = 0, H = 0, DPR = 1, ZOOM = 1, VL = 0, VT = 0, VS = 1, viewKey = '';
+/* Зовётся каждый кадр: Safari пропускает события при повороте и после камеры. Если страницу всё же увеличили, игра занимает видимую часть экрана в обычном размере. */
 function resize() {
-  const v = window.visualViewport; if (v && v.scale > 1.05) return;
-  DPR = Math.min(window.devicePixelRatio || 1, 2); W = Math.round(v ? v.width : innerWidth); H = Math.round(v ? v.height : innerHeight);
-  const st = document.documentElement.style; st.setProperty('--vh', H + 'px'); st.setProperty('--vt', Math.round(v ? v.offsetTop : 0) + 'px');
-  cv.width = W * DPR; cv.height = H * DPR; ZOOM = Math.min(W, H) < 560 ? .78 : 1;
+  const v = window.visualViewport, s = v && Math.abs(v.scale - 1) > .01 ? v.scale : 1, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.round((v ? v.width : innerWidth) * s), h = Math.round((v ? v.height : innerHeight) * s), l = v ? v.offsetLeft : 0, t = v ? v.offsetTop : 0, key = [w, h, l, t, s, dpr].join();
+  if (key === viewKey || !w || !h) return; viewKey = key;
+  const st = document.documentElement.style; st.setProperty('--vw', w + 'px'); st.setProperty('--vh', h + 'px'); st.setProperty('--vl', l + 'px'); st.setProperty('--vt', t + 'px'); st.setProperty('--vs', 1 / s);
+  VL = l; VT = t; VS = s;
+  if (w !== W || h !== H || dpr !== DPR) { W = w; H = h; DPR = dpr; cv.width = W * DPR; cv.height = H * DPR; ZOOM = Math.min(W, H) < 560 ? .78 : 1; }
 }
-addEventListener('resize', resize); addEventListener('orientationchange', () => setTimeout(resize, 300));
-if (window.visualViewport) { visualViewport.addEventListener('resize', resize); visualViewport.addEventListener('scroll', resize); }
 resize();
+const screenPt = e => ({ x: (e.clientX - VL) * VS, y: (e.clientY - VT) * VS });
+for (const t of ['gesturestart', 'gesturechange', 'gestureend', 'dblclick']) document.addEventListener(t, e => e.preventDefault(), { passive: false });
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 const SHORT = () => H < 460;
 
 /* ---------- данные: стихии и шмыги (все нарисованы с нуля для этой игры) ---------- */
@@ -1248,10 +1276,11 @@ addEventListener('keyup', e => { keys[e.key.length === 1 ? e.key.toLowerCase() :
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; joy.on = false; });
 cv.addEventListener('pointerdown', e => {
   if (busy()) return;
-  if (scene === WORLD) { if (e.pointerType !== 'mouse' || e.buttons) { joy.on = true; joy.id = e.pointerId; joy.ox = e.clientX; joy.oy = e.clientY; joy.x = joy.y = 0; cv.setPointerCapture(e.pointerId); } }
-  else if (scene && scene.tap) scene.tap(e.clientX, e.clientY);
+  const p = screenPt(e);
+  if (scene === WORLD) { if (e.pointerType !== 'mouse' || e.buttons) { joy.on = true; joy.id = e.pointerId; joy.ox = p.x; joy.oy = p.y; joy.x = joy.y = 0; cv.setPointerCapture(e.pointerId); } }
+  else if (scene && scene.tap) scene.tap(p.x, p.y);
 });
-cv.addEventListener('pointermove', e => { if (joy.on && e.pointerId === joy.id) { const dx = e.clientX - joy.ox, dy = e.clientY - joy.oy, l = Math.hypot(dx, dy), k = l > 46 ? 46 / l : 1; joy.x = dx * k / 46; joy.y = dy * k / 46; } });
+cv.addEventListener('pointermove', e => { if (joy.on && e.pointerId === joy.id) { const p = screenPt(e), dx = p.x - joy.ox, dy = p.y - joy.oy, l = Math.hypot(dx, dy), k = l > 46 ? 46 / l : 1; joy.x = dx * k / 46; joy.y = dy * k / 46; } });
 const joyEnd = e => { if (e.pointerId === joy.id) { joy.on = false; joy.x = joy.y = 0; } };
 cv.addEventListener('pointerup', joyEnd); cv.addEventListener('pointercancel', joyEnd);
 const bindPress = (id, fn) => $(id).addEventListener('pointerdown', e => { e.preventDefault(); fn(); });
@@ -1272,6 +1301,7 @@ if (!G.started) titleScreen(); else if (!G.storyV) intro(); else if (G.ch >= 6 &
 let last = performance.now();
 function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now;
+  resize();
   try { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); if (scene.update) scene.update(dt); scene.draw(ctx, dt); } catch (e) { console.error(e); }
   requestAnimationFrame(frame);
 }
