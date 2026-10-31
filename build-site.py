@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Wraps index.html (Artifact format, no document tags) into docs/index.html for GitHub Pages."""
 from pathlib import Path
+import shutil
 
 HEAD = """<!doctype html>
 <html lang="ru">
@@ -39,3 +40,4 @@ head, body = game.split('<canvas id="c"', 1)
     '<!doctype html>\n<html lang="ru">\n<head>\n' + head + '</head>\n<body>\n<canvas id="c"' + body + "</body>\n</html>\n",
     encoding="utf-8",
 )
+shutil.copytree(root / "catch" / "art", root / "docs" / "catch" / "art", dirs_exist_ok=True)
