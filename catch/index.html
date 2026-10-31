@@ -185,6 +185,12 @@ const SPECIES = [
   { n: 'Жемчужка', e: 'spirit', r: 2, z: [5], s: 'blob', a: '#efe2ff', b: '#ffffff', top: 'star', m: 'Блеск' },
   { n: 'Искроугорь', e: 'electric', r: 2, z: [5], s: 'fish', a: '#3a3f8f', b: '#ffe05a', top: 'bolt', m: 'Разряд' },
   { n: 'Глубинник', e: 'water', r: 3, z: [5], s: 'whale', a: '#1b2f6b', b: '#9fc4ff', top: '', m: 'Глубинная волна' },
+  { n: 'Кротик', e: 'rock', r: 1, z: [6], s: 'blob', a: '#7a5a45', b: '#d8c0a8', top: '', m: 'Подкоп' },
+  { n: 'Светлячок', e: 'electric', r: 1, z: [6], s: 'bird', a: '#b7f05a', b: '#f4ffc8', top: 'bolt', m: 'Вспышка' },
+  { n: 'Грибочек', e: 'grass', r: 1, z: [6], s: 'blob', a: '#c85a5a', b: '#fff0dc', top: 'leaf', m: 'Споры' },
+  { n: 'Сталагмит', e: 'rock', r: 2, z: [6], s: 'golem', a: '#8f8fa8', b: '#d6d6e4', top: 'crystal', m: 'Каменный дождь' },
+  { n: 'Лавчик', e: 'fire', r: 2, z: [6], s: 'blob', a: '#ff5a1f', b: '#ffd25e', top: 'flame', m: 'Лава' },
+  { n: 'Тёмень', e: 'spirit', r: 3, z: [6], s: 'ghost', a: '#35305a', b: '#8f88c8', top: 'star', m: 'Тьма' },
 ];
 const STARTERS = [0, 1, 2];
 const TRAINERS = [
@@ -198,25 +204,32 @@ const BARON = { id: 'baron', n: 'Барон Хапун', x: 48, y: 75, col: '#3a
 const SNAP = { id: 'snap', w: 1, n: 'Краб Щёлк', x: 44, y: 32, col: '#e2552e', team: [[21, 4], [18, 5]], hi: 'Щёлк-щёлк! Адмирал никого не пускает!' };
 const ADMIRAL = { id: 'admiral', w: 1, n: 'Адмирал Глубь', x: 78, y: 66, col: '#1b2f6b', team: [[22, 5], [20, 5], [23, 6]], hi: 'Барон стал добрым? Смешно! Жемчужная медаль моя!' };
 const VINTIK = { id: 'vintik', n: 'Механик Винтик', x: 16, y: 63, col: '#c47a2c' };
-const NPCS = [...TRAINERS, RAY, BARON, VINTIK, SNAP, ADMIRAL];
+const MOLE = { id: 'mole', w: 2, n: 'Крот Рыло', x: 46, y: 40, col: '#7a5a45', team: [[24, 5], [26, 5]], hi: 'Кто тут бурит мои норы? Граф никого не пустит!' };
+const KOPUN = { id: 'kopun', w: 2, n: 'Граф Копун', x: 80, y: 68, col: '#3a2a5e', villain: true, team: [[27, 5], [28, 5], [29, 6]], hi: 'Я брат Барона! Рубиновая медаль и все подземные шмыги мои!' };
+const NPCS = [...TRAINERS, RAY, BARON, VINTIK, SNAP, ADMIRAL, MOLE, KOPUN];
+const CAVE = { x: 88, y: 10 }, PORTAL2 = { x: 12, y: 12, w: 2 };
 const HOLE = { x: 24, y: 76 }, PORTAL = { x: 12, y: 12, w: 1 };
 const PARTS = [{ x: 8, y: 32, n: 'винт' }, { x: 50, y: 42, n: 'стекло' }, { x: 84, y: 40, n: 'мотор' }];
 const CAGES = [{ x: 38, y: 12, sp: 8 }, { x: 54, y: 34, sp: 11 }, { x: 40, y: 50, sp: 7 }];
-const CHAPTERS = [null, 'Луг', 'Лес', 'Горы', 'Море', 'Замок Хапуна', 'Дырка в море', 'Механик Винтик', 'Подводный мир', 'Подземный мир'];
-const NEXT_CH = { helper: 2, sonya: 3, timur: 4, mira: 5, admiral: 9 };
+const CHAPTERS = [null, 'Луг', 'Лес', 'Горы', 'Море', 'Замок Хапуна', 'Дырка в море', 'Механик Винтик', 'Подводный мир', 'Брат Барона', 'Алмазный бур', 'Подземный мир', 'Друзья навсегда'];
+const NEXT_CH = { helper: 2, sonya: 3, timur: 4, mira: 5, admiral: 9, kopun: 12 };
+const G_N = 'Чемпион';
 const CH_SAY = {
   2: [['Рэй', 'Здорово! Теперь ты умеешь прыгать через реку. Жми «Прыжок» у самого берега.'], ['Рэй', 'В лесу Хапун запер шмыгов в клетки. Открой все клетки и найди Соню.']],
   3: [['Соня', 'Прости! Барон меня обманул. Он забрал и моих шмыгов.'], ['Соня', 'Держи Значок Леса. И кнопку «Искать»: она покажет, где прячутся шмыги.'], ['Рэй', 'Дальше горы, но там широкая река. Нужен большой прыжок. Иди в спорт и сделай 5 прыжков за забег!']],
   4: [['Тимур', 'Ты сильный! Вот тебе Значок Гор.'], ['Рэй', 'Теперь плыви! Иди в воду на водяном шмыге. Корабль Капитана Миры на востоке моря.']],
   7: [['Рейнджер Рэй', 'Вот она, дырка! Но там такая глубина, что просто так не нырнуть.'], ['Рейнджер Рэй', 'Нужна подводная машина. На пляже живёт Механик Винтик, плыви к нему!']],
   8: [['Механик Винтик', 'Готово! Подводная машина! В ней ты и твои шмыги можете плавать под водой.'], ['Механик Винтик', 'Плыви к дырке в море и ныряй!']],
-  9: [['Адмирал Глубь', 'Ладно, ладно! Забирай Жемчужную медаль. После кубка это твоя вторая большая награда!'], ['Адмирал Глубь', 'Но у Барона есть брат. Он живёт под землёй, и он ещё хитрее меня.'], ['Рейнджер Рэй', 'Подземный мир скоро откроется. А пока лови всех шмыгов!']],
+  9: [['Адмирал Глубь', 'Ладно, ладно! Забирай Жемчужную медаль. После кубка это твоя вторая большая награда!'], ['Адмирал Глубь', 'Но у Барона есть брат. Он живёт под землёй, и он ещё хитрее меня.'], ['Рейнджер Рэй', 'Под землю без машины не пройти. Плыви к Винтику!']],
+  10: [['Механик Винтик', 'Под землю? Я переделаю машину в бур! Но нужен алмазный наконечник.'], ['Механик Винтик', 'Алмаз есть у Тимура в горах. Сходи к нему!']],
+  11: [['Механик Винтик', 'Готово! Алмазный бур! Он копает землю сам: просто езжай в неё.'], ['Механик Винтик', 'Вход в подземный мир в пещере, на севере гор. Там темно, не теряй красную стрелку!']],
+  12: [['Граф Копун', 'Ох! Ты победил. Вот Рубиновая медаль.'], ['Граф Копун', 'Я копал так глубоко, потому что искал брата. Мы поссорились и не виделись сто лет.'], ['Барон Хапун', 'Брат! Прости меня! Иди к нам, у нас теперь есть друзья.'], ['Рейнджер Рэй', G_N + ' спас все три мира! Теперь все дружат. Осталось собрать всех шмыгов!']],
   5: [['Капитан Мира', 'Ого! Вот Значок Моря. Теперь у тебя три значка.'], ['Рэй', 'Три значка открывают ворота. Плыви на остров в море. Там замок Барона Хапуна!']],
 };
 
 /* ---------- сохранение ---------- */
 const KEY = 'i-will-catch-you-1', OLD_KEY = ['po', 'kemon-i-will-catch-you-1'].join('');
-const fresh = () => ({ started: false, name: 'Миша', p2: 'Игрок 2', balls: 6, coins: 12, x: 12, y: 14, mine: [], cards: [], team: [], beaten: {}, houses: Array(8).fill(null), cup: false, uid: 1, tips: {}, mute: false, ch: 1, catches: 0, cages: [0, 0, 0], bigJump: false, storyV: 0, loss: {}, world: 0, parts: [0, 0, 0], mechMet: false, sub: false, part2: false });
+const fresh = () => ({ started: false, name: 'Миша', p2: 'Игрок 2', balls: 6, coins: 12, x: 12, y: 14, mine: [], cards: [], team: [], beaten: {}, houses: Array(8).fill(null), cup: false, uid: 1, tips: {}, mute: false, ch: 1, catches: 0, cages: [0, 0, 0], bigJump: false, storyV: 0, loss: {}, world: 0, parts: [0, 0, 0], mechMet: false, sub: false, part2: false, diamond: false, drill: false, dug: [] });
 let G = fresh();
 try { const raw = localStorage.getItem(KEY) || localStorage.getItem(OLD_KEY); if (raw) G = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
 let saveFailed = false;
@@ -417,7 +430,7 @@ function drawTrainer(c, x, y, col, t) {
 
 /* ---------- карта мира ---------- */
 const MW = 96, MH = 84, TS = 44;
-const T = { GRASS: 0, TALL: 1, RIVER: 2, SEA: 3, SAND: 4, ROCK: 5, TREE: 6, PATH: 7, FOREST: 8, FLOWER: 9, DUST: 10, DEEP: 11, CORAL: 12, WEED: 13 };
+const T = { GRASS: 0, TALL: 1, RIVER: 2, SEA: 3, SAND: 4, ROCK: 5, TREE: 6, PATH: 7, FOREST: 8, FLOWER: 9, DUST: 10, DEEP: 11, CORAL: 12, WEED: 13, TUNNEL: 14, DIRT: 15, STONE: 16 };
 let wi = 0, map = new Uint8Array(MW * MH); const R1 = y => 31 + 2.5 * Math.sin(y * .2), R2 = y => 62 + 2.5 * Math.sin(y * .17 + 1), SHORE = x => 62 + 3 * Math.sin(x * .13) + 2 * Math.sin(x * .31);
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 (function genMap() {
@@ -446,7 +459,7 @@ function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Ma
   for (const q of CAGES) disc(q.x, q.y, 2, T.FOREST);
   disc(72, 60, 3, T.SAND);
   disc(48, 75, 6, T.SAND); disc(82, 74, 3, T.SAND);
-  disc(VINTIK.x, VINTIK.y, 2, T.SAND); disc(PARTS[0].x, PARTS[0].y, 2, T.GRASS); disc(PARTS[1].x, PARTS[1].y, 2, T.FOREST); disc(PARTS[2].x, PARTS[2].y, 2, T.DUST);
+  disc(VINTIK.x, VINTIK.y, 2, T.SAND); disc(PARTS[0].x, PARTS[0].y, 2, T.GRASS); disc(PARTS[1].x, PARTS[1].y, 2, T.FOREST); disc(PARTS[2].x, PARTS[2].y, 2, T.DUST); disc(CAVE.x, CAVE.y, 2, T.DUST);
   for (const [x, y] of [[44, 72], [52, 72], [44, 78], [53, 78]]) set(x, y, T.TREE);
 })();
 const tile = (x, y) => (x < 0 || y < 0 || x >= MW || y >= MH) ? T.TREE : map[Math.floor(x) + Math.floor(y) * MW];
@@ -457,9 +470,17 @@ const MAPS = [map, (function genDeep() {
   const line = (a, b) => { const n = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y)); for (let i = 0; i <= n; i++) disc(Math.round(a.x + (b.x - a.x) * i / n), Math.round(a.y + (b.y - a.y) * i / n), 2, T.DEEP); };
   line(PORTAL, SNAP); line(SNAP, ADMIRAL); disc(PORTAL.x, PORTAL.y, 4, T.DEEP); disc(SNAP.x, SNAP.y, 4, T.DEEP); disc(ADMIRAL.x, ADMIRAL.y, 5, T.DEEP);
   return m;
+})(), (function genCave() {
+  const m = new Uint8Array(MW * MH).fill(T.DIRT), r = mulberry(4242), set = (x, y, t) => { if (x > 1 && y > 1 && x < MW - 2 && y < MH - 2) m[x + y * MW] = t; };
+  const disc = (cx, cy, rad, t) => { for (let y = cy - rad; y <= cy + rad; y++) for (let x = cx - rad; x <= cx + rad; x++) if (Math.hypot(x - cx, y - cy) <= rad) set(x, y, t); };
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (x < 2 || y < 2 || x >= MW - 2 || y >= MH - 2) m[x + y * MW] = T.STONE;
+  for (let i = 0; i < 90; i++) disc(2 + Math.floor(r() * 92), 2 + Math.floor(r() * 80), r() < .5 ? 1 : 2, T.STONE);
+  for (let i = 0; i < 60; i++) disc(3 + Math.floor(r() * 90), 3 + Math.floor(r() * 78), 2 + Math.floor(r() * 3), T.TUNNEL);
+  disc(PORTAL2.x, PORTAL2.y, 4, T.TUNNEL); disc(MOLE.x, MOLE.y, 4, T.TUNNEL); disc(KOPUN.x, KOPUN.y, 5, T.TUNNEL);
+  return m;
 })()];
-const isWater = t => t === T.RIVER || t === T.SEA, isSolid = t => t === T.TREE || t === T.ROCK || t === T.CORAL, walk = t => !isWater(t) && !isSolid(t);
-const zoneOf = (x, y) => { if (wi === 1) return 5; if (y > 66 && tile(x, y) === T.SAND) return 4; const sh = SHORE(x); if (y > sh - 1 || isWater(tile(x, y))) return 3; return x < R1(y) ? 0 : x < R2(y) ? 1 : 2; };
+const isWater = t => t === T.RIVER || t === T.SEA, isSolid = t => t === T.TREE || t === T.ROCK || t === T.CORAL || t === T.DIRT || t === T.STONE, walk = t => !isWater(t) && !isSolid(t);
+const zoneOf = (x, y) => { if (wi === 2) return 6; if (wi === 1) return 5; if (y > 66 && tile(x, y) === T.SAND) return 4; const sh = SHORE(x); if (y > sh - 1 || isWater(tile(x, y))) return 3; return x < R1(y) ? 0 : x < R2(y) ? 1 : 2; };
 
 /* заготовки тайлов рисуются один раз */
 function mkTile(fn) { const c = h('canvas', { width: TS * 2, height: TS * 2 }), x = c.getContext('2d'); x.scale(2, 2); fn(x); return c; }
@@ -481,6 +502,11 @@ for (let v = 0; v < 4; v++) {
   TILES[T.DEEP + '_' + v] = base('#14568f', ['#125085', '#1a629e'], 7, 2.4, 81 + v);
   TILES[T.CORAL + '_' + v] = TILES[T.DEEP + '_' + v];
   TILES[T.WEED + '_' + v] = mkTile(c => { c.drawImage(TILES[T.DEEP + '_' + v], 0, 0, TS, TS); const q = mulberry(91 + v); c.lineCap = 'round'; c.lineWidth = 3.5; for (let i = 0; i < 5; i++) { const x = 6 + q() * 32, y = 40; c.strokeStyle = q() > .5 ? '#2fae7a' : '#22c79a'; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x - 7, y - 12, x + 2, y - 20); c.quadraticCurveTo(x + 8, y - 26, x, y - 34); c.stroke(); } });
+}
+for (let v = 0; v < 4; v++) {
+  TILES[T.TUNNEL + '_' + v] = base('#8a6a52', ['#7e604a', '#96755c'], 7, 2.4, 101 + v);
+  TILES[T.DIRT + '_' + v] = base('#4a3226', ['#3f2a20', '#573c2e', '#6a4a38'], 12, 3, 111 + v);
+  TILES[T.STONE + '_' + v] = mkTile(c => { c.fillStyle = '#5a5a6e'; c.fillRect(0, 0, TS, TS); c.strokeStyle = '#3e3e50'; c.lineWidth = 3; c.strokeRect(4, 4, 18, 14); c.strokeRect(24, 6, 16, 16); c.strokeRect(8, 24, 22, 16); });
 }
 const SPR_CORAL = mkTile2(60, 60, c => { c.lineCap = 'round'; c.lineJoin = 'round'; for (const [w, col] of [[11, OUT], [6, '#ff6f91']]) { c.lineWidth = w; c.strokeStyle = col; c.beginPath(); c.moveTo(30, 56); c.lineTo(30, 18); c.moveTo(30, 40); c.lineTo(12, 22); c.moveTo(30, 34); c.lineTo(48, 14); c.moveTo(12, 22); c.lineTo(10, 10); c.moveTo(48, 14); c.lineTo(54, 26); c.stroke(); } });
 const WATER = [T.RIVER, T.SEA].map(t => [0, 1, 2, 3].map(f => mkTile(c => {
@@ -553,10 +579,10 @@ $('panelClose').onclick = () => { sfx.ui(); closePanel(); };
 function syncUI() {
   const world = scene === WORLD, b = $('sBalls');
   $('hud').hidden = !world;
-  const q = quest(), panelOpen = !$('veil').hidden, badges = ['sonya', 'timur', 'mira', 'admiral'].filter(k => G.beaten[k]).length;
+  const q = quest(), panelOpen = !$('veil').hidden, badges = ['sonya', 'timur', 'mira', 'admiral', 'kopun'].filter(k => G.beaten[k]).length;
   $('goal').hidden = !world || panelOpen; $('goal').textContent = '🎯 ' + q.t; $('sBadge').hidden = !badges; $('sBadge').textContent = '🏅 ' + badges;
   $('mTown').classList.toggle('call', world && q.btn === 'mTown'); $('mSport').classList.toggle('call', world && q.btn === 'mSport');
-  const jb = $('btnJump'), fb = $('btnFind'); jb.hidden = wi === 1; jb.classList.toggle('locked', G.ch < 2); fb.classList.toggle('locked', !G.beaten.sonya); jb.textContent = (G.ch < 2 ? '🔒 ' : '') + 'Прыжок'; fb.textContent = (G.beaten.sonya ? '' : '🔒 ') + 'Искать'; $('pads').hidden = !world || !$('veil').hidden;
+  const jb = $('btnJump'), fb = $('btnFind'); jb.hidden = wi > 0; jb.classList.toggle('locked', G.ch < 2); fb.classList.toggle('locked', !G.beaten.sonya); jb.textContent = (G.ch < 2 ? '🔒 ' : '') + 'Прыжок'; fb.textContent = (G.beaten.sonya ? '' : '🔒 ') + 'Искать'; $('pads').hidden = !world || !$('veil').hidden;
   b.textContent = G.balls; $('sCoins').textContent = G.coins; $('sDex').textContent = caughtSet().size + '/' + SPECIES.length; $('sCup').hidden = !G.cup; $('mSound').textContent = G.mute ? '🔇' : '🔊';
 }
 const busy = () => !$('talk').hidden || !$('veil').hidden;
@@ -564,7 +590,7 @@ function setActs(list) { const a = $('acts'); a.replaceChildren(...list); a.hidd
 
 /* ---------- мир ---------- */
 const hero = { x: G.x, y: G.y, dir: 1, moving: false, t: 0, jump: 0, jx: 0, jy: 0, vx: 0, vy: 0, ox: 0, oy: 0, z: 0, riding: false, radar: 0, target: null };
-let holeCool = 0, goalT = 0, wilds = [], pickups = [], worldT = 0, saveT = 0, hintT = 0, talkCool = 0, bannerT = 0;
+let lastDt = 0, holeCool = 0, goalT = 0, wilds = [], pickups = [], worldT = 0, saveT = 0, hintT = 0, talkCool = 0, bannerT = 0;
 const keys = {}, joy = { on: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
 function waterRide() { return allOwned().find(i => itemElem(i) === 'water'); }
 function spawnWild(z) {
@@ -579,7 +605,7 @@ function spawnWild(z) {
     wilds.push({ sp, x, y, vx: 0, vy: 0, t: rnd(0, 9), go: 0, flee: 0, tired: 0 }); return;
   }
 }
-function spawnAll() { wilds = []; for (const [z, n] of wi === 1 ? [[5, 16]] : [[0, 6], [1, 6], [2, 6], [3, 6], [4, 2]]) for (let i = 0; i < n; i++) spawnWild(z); }
+function spawnAll() { wilds = []; for (const [z, n] of wi === 2 ? [[6, 14]] : wi === 1 ? [[5, 16]] : [[0, 6], [1, 6], [2, 6], [3, 6], [4, 2]]) for (let i = 0; i < n; i++) spawnWild(z); }
 function makePickups() {
   const q = mulberry(77 + wi); pickups = [];
   for (let i = 0; i < (wi ? 20 : 44); i++) { for (let k = 0; k < 40; k++) { const x = 3 + q() * (MW - 6), y = 3 + q() * (MH - 6); if (walk(tile(x, y))) { pickups.push({ x, y, k: i % 4 === 0 ? 'chest' : 'ball', gone: 0 }); break; } } }
@@ -590,18 +616,23 @@ function setWorld(i, x, y) {
   wi = i; map = MAPS[i]; G.world = i; hero.x = x; hero.y = y; hero.jump = 0; hero.z = 0; hero.riding = i === 0 && isWater(tile(x, y + .15)); hero.target = null; hero.radar = 0;
   G.x = x; G.y = y; talkCool = 2; holeCool = 4; spawnAll(); makePickups(); save(); syncUI();
 }
-function drawSub(c, x, y, dir, t) {
+function drawSub(c, x, y, dir, t, drill) {
   c.save(); c.translate(x, y + Math.sin(t * 3) * 3); c.scale(dir < 0 ? -1 : 1, 1); c.lineWidth = 3.5; c.strokeStyle = OUT; c.lineJoin = 'round';
-  c.fillStyle = '#ffcf33'; c.beginPath(); ell(c, 0, 0, 40, 25); c.fill(); c.stroke();
+  if (drill) { c.fillStyle = '#9fffe8'; c.beginPath(); c.moveTo(34, -18); c.lineTo(70, 0); c.lineTo(34, 18); c.closePath(); c.fill(); c.stroke(); const q = (t * 6) % 1; c.beginPath(); for (let i = 0; i < 3; i++) { const xx = 38 + ((i + q) % 3) * 10; c.moveTo(xx, -13 + (xx - 38) * .36); c.lineTo(xx + 4, 13 - (xx - 38) * .36); } c.stroke(); }
+  c.fillStyle = drill ? '#ef8a2e' : '#ffcf33'; c.beginPath(); ell(c, 0, 0, 40, 25); c.fill(); c.stroke();
   c.beginPath(); c.moveTo(-38, 0); c.lineTo(-56, -14); c.lineTo(-56, 14); c.closePath(); c.fillStyle = '#ef3e42'; c.fill(); c.stroke();
   c.fillStyle = '#ef3e42'; c.beginPath(); c.roundRect(-10, -36, 20, 14, 4); c.fill(); c.stroke();
   c.fillStyle = '#bff0ff'; c.beginPath(); c.arc(12, -2, 15, 0, 7); c.fill(); c.stroke();
   drawHero(c, 12, 16, 1, 0, false, .62);
-  c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 2; for (let i = 0; i < 3; i++) { const q = (t * 2 + i * .33) % 1; c.beginPath(); c.arc(-64 - q * 22, Math.sin(i * 2) * 8 - q * 14, 2 + q * 3, 0, 7); c.stroke(); }
+  if (!drill) { c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 2; } if (!drill) for (let i = 0; i < 3; i++) { const q = (t * 2 + i * .33) % 1; c.beginPath(); c.arc(-64 - q * 22, Math.sin(i * 2) * 8 - q * 14, 2 + q * 3, 0, 7); c.stroke(); }
   c.restore();
 }
 function tryStep(nx, ny) {
   const t = tile(nx, ny + .15);
+  if (t === T.DIRT && wi === 2) {
+    hero.dig = (hero.dig || 0) + lastDt; if (hero.dig < .14) return false;
+    hero.dig = 0; const k = Math.floor(nx) + Math.floor(ny + .15) * MW; map[k] = T.TUNNEL; G.dug.push(k); tone(rnd(120, 190), .05, 'sawtooth', .04); return true;
+  }
   if (isWater(t)) { if (G.ch >= 4 && waterRide()) { if (!hero.riding) { hero.riding = true; sfx.splash(); toast('Плывём на ' + itemName(waterRide()) + '!'); } return true; }
     if (hintT <= 0) { toast(G.ch < 2 ? 'Реку пока не перейти. Победи Шныря у реки' : G.ch < 4 ? 'Плавать пока нельзя. Через реку прыгай!' : 'Нужен водяной шмыг, чтобы плыть'); hintT = 3; } return false; }
   if (isSolid(t)) return false;
@@ -609,7 +640,7 @@ function tryStep(nx, ny) {
   return true;
 }
 function doJump() {
-  if (scene !== WORLD || busy() || hero.jump > 0 || hero.riding || wi === 1) return;
+  if (scene !== WORLD || busy() || hero.jump > 0 || hero.riding || wi > 0) return;
   if (G.ch < 2) { toast('Прыжок откроется, когда победишь Шныря у реки'); return; }
   let dx = hero.vx, dy = hero.vy, l = Math.hypot(dx, dy); if (l < .01) { dx = hero.dir; dy = 0; l = 1; }
   hero.jump = .52; hero.jx = dx / l; hero.jy = dy / l; hero.ox = hero.x; hero.oy = hero.y; sfx.jump();
@@ -624,7 +655,7 @@ function radar() {
 const WORLD = {
   enter() { setActs([]); $('acts').hidden = true; },
   update(dt) {
-    worldT += dt; hintT -= dt; talkCool -= dt; saveT += dt; bannerT = Math.max(0, bannerT - dt);
+    lastDt = dt; worldT += dt; hintT -= dt; talkCool -= dt; saveT += dt; bannerT = Math.max(0, bannerT - dt);
     if (saveT > 4) { saveT = 0; G.x = hero.x; G.y = hero.y; save(); }
     if (hero.radar > 0) hero.radar -= dt;
     if (busy()) { hero.moving = false; return; }
@@ -666,9 +697,11 @@ const WORLD = {
         if (p.k === 'ball') { G.balls++; toast('+1 звездолов'); } else { G.balls += 3; G.coins += 5; toast('Сундук! +3 звездолова и +5 монет'); } save(); syncUI(); }
     }
     if (talkCool <= 0) for (const q of NPCS) if ((q.w || 0) === wi && Math.hypot(q.x - hero.x, q.y - hero.y) < 1.7) { meet(q); break; }
-    if (wilds.length < (wi ? 16 : 22) && Math.random() < dt * .6) spawnWild(wi ? 5 : pick([0, 1, 2, 3, 3, 4]));
+    if (wilds.length < (wi ? 16 : 22) && Math.random() < dt * .6) spawnWild(wi === 2 ? 6 : wi ? 5 : pick([0, 1, 2, 3, 3, 4]));
     holeCool -= dt;
     if (wi === 1 && holeCool <= 0 && Math.hypot(PORTAL.x - hero.x, PORTAL.y - hero.y) < 1.5) { setWorld(0, HOLE.x + 3, HOLE.y); toast('Всплыли!'); return; }
+    if (wi === 2 && holeCool <= 0 && Math.hypot(PORTAL2.x - hero.x, PORTAL2.y - hero.y) < 1.5) { setWorld(0, CAVE.x - 2, CAVE.y + 2); toast('Выбрались наверх!'); return; }
+    if (wi === 0 && holeCool <= 0 && G.drill && Math.hypot(CAVE.x - hero.x, CAVE.y - hero.y) < 1.5) { setWorld(2, PORTAL2.x + 3, PORTAL2.y); sfx.splash(); bannerT = 2.5; return; }
     if (wi === 0 && holeCool <= 0 && hero.riding && Math.hypot(HOLE.x - hero.x, HOLE.y - hero.y) < 1.8) {
       holeCool = 5;
       if (G.ch === 6) { startChapter(7); return; }
@@ -702,8 +735,9 @@ const WORLD = {
       CAGES.forEach((q, i) => list.push({ y: q.y * TS, k: 7, q, i }));
       list.push({ y: 72.6 * TS, k: 8 }, { y: 73.6 * TS, k: 9 });
       if (G.ch >= 6) list.push({ y: HOLE.y * TS - 40, k: 10 });
+      if (G.ch >= 9) list.push({ y: CAVE.y * TS, k: 14 });
       if (G.mechMet && !G.sub) PARTS.forEach((q, i) => { if (!G.parts[i]) list.push({ y: q.y * TS, k: 11, q }); });
-    } else list.push({ y: PORTAL.y * TS - 40, k: 12 });
+    } else if (wi === 1) list.push({ y: PORTAL.y * TS - 40, k: 12 }); else list.push({ y: PORTAL2.y * TS, k: 14 });
     list.push({ y: hero.y * TS + 1, k: 6 });
     list.sort((a, b) => a.y - b.y);
     for (const e of list) {
@@ -718,11 +752,12 @@ const WORLD = {
       else if (e.k === 10 || e.k === 12) { const q = e.k === 10 ? HOLE : PORTAL, px = q.x * TS, py = q.y * TS; for (let i = 0; i < 4; i++) { c.strokeStyle = i % 2 ? '#bff0ff' : '#0b3f7a'; c.lineWidth = 7; c.beginPath(); c.arc(px, py, 58 - i * 14, worldT * 2 + i, worldT * 2 + i + 4.6); c.stroke(); } c.fillStyle = '#071f45'; c.beginPath(); c.arc(px, py, 12, 0, 7); c.fill(); }
       else if (e.k === 11) { const px = e.q.x * TS, py = e.q.y * TS - 6 + Math.sin(worldT * 4) * 3; c.fillStyle = '#c6c2d4'; c.strokeStyle = OUT; c.lineWidth = 3; c.beginPath(); for (let i = 0; i < 16; i++) { const k = i % 2 ? 11 : 17, a = i * Math.PI / 8; c.lineTo(px + Math.cos(a) * k, py + Math.sin(a) * k); } c.closePath(); c.fill(); c.stroke(); c.fillStyle = '#ffcf33'; c.beginPath(); c.arc(px, py, 5, 0, 7); c.fill(); c.stroke(); }
       else if (e.k === 13) c.drawImage(SPR_CORAL, e.px - 8, e.py - 16, 60, 60);
+      else if (e.k === 14) { const q = wi === 2 ? PORTAL2 : CAVE, px = q.x * TS, py = q.y * TS; c.fillStyle = wi === 2 ? '#bfe9ff' : '#1a1224'; c.strokeStyle = OUT; c.lineWidth = 5; c.beginPath(); c.moveTo(px - 38, py + 26); c.quadraticCurveTo(px - 38, py - 44, px, py - 44); c.quadraticCurveTo(px + 38, py - 44, px + 38, py + 26); c.closePath(); c.fill(); c.stroke(); }
       else if (e.k === 8) drawHouse(c, 48 * TS, 71.6 * TS, 'castle', 2.3);
       else if (e.k === 9) drawShip(c, 82 * TS, 72.6 * TS, worldT);
       else if (e.k === 6) {
         const hx = wx, hy = wy; c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); ell(c, hx, hy + 22, 15 - hero.z * .08, 5); c.fill();
-        if (wi === 1) drawSub(c, hx, hy - 8, hero.dir, worldT);
+        if (wi > 0) drawSub(c, hx, hy - 8, hero.dir, worldT, wi === 2);
         else if (hero.riding) { const r = waterRide(), wob = Math.sin(worldT * 5) * 3; c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 3; c.beginPath(); ell(c, hx, hy + 18, 34 + wob, 12); c.stroke();
           if (r && r.img === undefined) drawCreature(c, SPECIES[r.sp], hx, hy + 8 + wob, 26, worldT, hero.dir < 0); else if (r) drawCard(c, cardImg(r.img), hx, hy + 10, 40, Math.PI / 2);
           drawHero(c, hx, hy - 20 + wob, hero.dir, 0, false); }
@@ -733,11 +768,12 @@ const WORLD = {
       c.save(); c.translate(px, py); c.rotate(a); c.fillStyle = '#ffcf33'; c.strokeStyle = OUT; c.lineWidth = 3; c.beginPath(); c.moveTo(20, 0); c.lineTo(-10, -13); c.lineTo(-4, 0); c.lineTo(-10, 13); c.closePath(); c.fill(); c.stroke(); c.restore();
       c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 3; c.beginPath(); c.arc(wx, wy, (4 - hero.radar) % 1 * 130, 0, 7); c.stroke(); }
     if (wi === 1) { c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.fillStyle = 'rgba(255,255,255,.5)'; for (let i = 0; i < 26; i++) { const yy = H - ((worldT * (24 + i * 2) + i * 137) % (H + 20)), xx = (i * 89) % W + Math.sin(worldT + i) * 8; c.beginPath(); c.arc(xx, yy, 2 + i % 4, 0, 7); c.fill(); } c.restore(); }
+    if (wi === 2) { c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); const sx = (wx - camX) * z, sy = (wy - camY) * z, g = c.createRadialGradient(sx, sy, 90, sx, sy, Math.max(240, Math.min(W, H) * .62)); g.addColorStop(0, 'rgba(8,4,16,0)'); g.addColorStop(1, 'rgba(8,4,16,.94)'); c.fillStyle = g; c.fillRect(0, 0, W, H); c.restore(); }
     const qt = questTarget(quest());
     if (qt && Math.hypot(qt.x - hero.x, qt.y - hero.y) > 5 && hero.radar <= 0) { const a = Math.atan2(qt.y - hero.y, qt.x - hero.x), px = wx + Math.cos(a) * 66, py = wy - 16 + Math.sin(a) * 66 + Math.sin(worldT * 5) * 3;
       c.save(); c.translate(px, py); c.rotate(a); c.fillStyle = '#ef3e42'; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.moveTo(20, 0); c.lineTo(-10, -13); c.lineTo(-4, 0); c.lineTo(-10, 13); c.closePath(); c.fill(); c.stroke(); c.restore(); }
     c.restore();
-    if (bannerT > 0) { c.fillStyle = 'rgba(29,36,64,.72)'; c.fillRect(0, H * .3, W, 92); hugeText(c, G.ch > 5 ? 'Часть 2' : 'Глава ' + G.ch, W / 2, H * .3 + 32, 22, '#ffcf33'); hugeText(c, CHAPTERS[G.ch], W / 2, H * .3 + 74, Math.min(38, W * .09), '#fff'); }
+    if (bannerT > 0) { c.fillStyle = 'rgba(29,36,64,.72)'; c.fillRect(0, H * .3, W, 92); hugeText(c, G.ch > 8 ? 'Часть 3' : G.ch > 5 ? 'Часть 2' : 'Глава ' + G.ch, W / 2, H * .3 + 32, 22, '#ffcf33'); hugeText(c, CHAPTERS[G.ch], W / 2, H * .3 + 74, Math.min(38, W * .09), '#fff'); }
     if (joy.on) { c.fillStyle = 'rgba(255,255,255,.22)'; c.strokeStyle = 'rgba(29,36,64,.5)'; c.lineWidth = 3; c.beginPath(); c.arc(joy.ox, joy.oy, 54, 0, 7); c.fill(); c.stroke(); c.fillStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(joy.ox + joy.x * 46, joy.oy + joy.y * 46, 24, 0, 7); c.fill(); c.stroke(); }
     drawFx(c, dt);
   },
@@ -771,6 +807,12 @@ function quest() {
       if (wi === 0) return { t: 'Ныряй в дырку на подводной машине', to: HOLE };
       if (!G.beaten.snap) return { t: 'Победи Краба Щёлка', to: SNAP };
       return { t: 'Победи Адмирала Глубь', to: ADMIRAL };
+    case 9: return { t: 'Найди брата Барона: иди к Винтику', to: VINTIK };
+    case 10: return G.diamond ? { t: 'Отнеси алмаз Винтику', to: VINTIK } : { t: 'Возьми алмаз у Тимура в горах', to: TRAINERS[2] };
+    case 11:
+      if (wi === 0) return { t: 'Найди пещеру на севере гор', to: CAVE };
+      if (!G.beaten.mole) return { t: 'Пробурись к Кроту Рыло', to: MOLE };
+      return { t: 'Победи Графа Копуна', to: KOPUN };
     default: { const n = caughtSet().size; return n < SPECIES.length ? { t: 'Собери всех шмыгов: ' + n + ' из ' + SPECIES.length, to: near(w => !caughtSet().has(w.sp)) } : { t: 'Ты собрал всех! Ты лучший ловец!' }; }
   }
 }
@@ -794,6 +836,9 @@ function openCage(i) {
 function meet(q) {
   talkCool = 3;
   if (q === VINTIK) {
+    if (G.ch === 9) { startChapter(10); return; }
+    if (G.ch === 10) { if (G.diamond) { G.drill = true; save(); startChapter(11); return; } talkCool = 8; say([['Механик Винтик', 'Алмаз у Тимура в горах!']]); return; }
+    if (G.ch >= 11) { talkCool = 15; return; }
     if (G.ch < 7) { talkCool = 10; say([['Механик Винтик', 'Я чиню всё на свете! Приходи, если что-то понадобится.']]); return; }
     if (G.sub) { talkCool = 15; return; }
     if (!G.mechMet) { G.mechMet = true; save(); syncUI(); talkCool = 8; say([['Механик Винтик', 'Подводная машина? Сделаю! Но нужны три детали: винт, стекло и мотор.'], ['Механик Винтик', 'Они лежат на лугу, в лесу и в горах. Красная стрелка покажет, куда идти.']]); return; }
@@ -809,7 +854,9 @@ function meet(q) {
     if (G.ch < 5) { talkCool = 8; say([['Барон Хапун', 'Ха-ха! Ворота заперты. Без трёх значков ты меня не победишь!']]); return; }
     say([['Барон Хапун', 'Ты дошёл до замка? Шмыги и кубок мои! Сейчас увидишь мою команду!']], () => startBattle(q)); return;
   }
+  if (q.id === 'timur' && G.ch === 10 && !G.diamond) { G.diamond = true; save(); syncUI(); talkCool = 8; say([['Тимур', 'Алмаз для бура? Держи, друг! Передай Винтику привет.']], syncUI); return; }
   if (G.beaten[q.id]) { talkCool = 12; return; }
+  if (q.id === 'kopun' && !G.beaten.mole) { talkCool = 8; say([['Граф Копун', 'Сначала победи Крота Рыло!']]); return; }
   if (q.id === 'sonya' && G.cages.some(x => !x)) { talkCool = 8; say([['Соня', 'Сначала открой все клетки, а потом приходи.']]); return; }
   if (q.id === 'admiral' && !G.beaten.snap) { talkCool = 8; say([['Адмирал Глубь', 'Сначала победи Краба Щёлка!']]); return; }
   if (q.id === 'helper' && (G.catches < 3 || !G.houses.some(x => x && x.who))) { talkCool = 8; say([['Шнырь', 'Ха! Сначала ' + quest().t.toLowerCase() + '. Потом поговорим!']]); return; }
@@ -822,13 +869,13 @@ function startBattle(q) {
     if (win) {
       G.beaten[q.id] = true; G.coins += 15; mine.forEach(i => gainXP(i, 12)); save();
       if (q === BARON) { G.cup = true; G.ch = 6; G.coins += 50; G.balls += 10; save(); go(TROPHY); return; }
-      go(WORLD); if (NEXT_CH[q.id]) startChapter(NEXT_CH[q.id]); else say([[q.n, 'Щёлк! Ты сильный. Адмирал дальше, в глубине.']], syncUI);
+      go(WORLD); if (NEXT_CH[q.id]) startChapter(NEXT_CH[q.id]); else say([[q.n, q.id === 'mole' ? 'Ой-ой! Граф дальше, в самой глубине.' : 'Щёлк! Ты сильный. Адмирал дальше, в глубине.']], syncUI);
     } else { G.loss[q.id] = lost + 1; mine.forEach(i => gainXP(i, 8)); talkCool = 6; hero.y -= 2.5; go(WORLD); say([[q.n, 'Почти! Сходи в спорт, потренируй шмыгов и возвращайся.']]); }
   } });
 }
 
 /* ---------- ловля ---------- */
-const BG = [['#a9e9ff', '#83dc58'], ['#7fd6b0', '#46a862'], ['#ffd7a0', '#dfa86c'], ['#8fdcff', '#2fa8f4'], ['#ffc8ec', '#f6dc8e'], ['#1f6fb8', '#174a86']];
+const BG = [['#a9e9ff', '#83dc58'], ['#7fd6b0', '#46a862'], ['#ffd7a0', '#dfa86c'], ['#8fdcff', '#2fa8f4'], ['#ffc8ec', '#f6dc8e'], ['#1f6fb8', '#174a86'], ['#4a3a55', '#2e2233']];
 function stage(c, z) { const g = c.createLinearGradient(0, 0, 0, H), b = BG[z] || BG[0]; g.addColorStop(0, b[0]); g.addColorStop(.62, b[0]); g.addColorStop(.621, b[1]); g.addColorStop(1, b[1]); c.fillStyle = g; c.fillRect(0, 0, W, H); }
 function startCatch(w) {
   const sp = SPECIES[w.sp], z = zoneOf(w.x, w.y);
@@ -873,7 +920,7 @@ function startCatch(w) {
   function broke() { tries++; mode = 'broke'; hideC = false; ball.t = 0; msg = 'Вырвался!'; sfx.fail(); burst(ball.ex, ball.ey, 14, ['#ef3e42', '#fff']); }
   function done() {
     mode = 'caught'; wob = 0; sfx.caught(); burst(ball.ex, ball.ey, 70, ['#ffcf33', '#ef3e42', '#2fa8f4', '#58c84a', '#fff']);
-    const isNew = !caughtSet().has(w.sp); G.catches++; addCreature(w.sp, 1 + (sp.r - 1) * 2 + [0, 1, 2, 2, 3, 4][z]); G.coins += isNew ? 6 : 2; save(); msg = 'Поймал!';
+    const isNew = !caughtSet().has(w.sp); G.catches++; addCreature(w.sp, 1 + (sp.r - 1) * 2 + [0, 1, 2, 2, 3, 4, 5][z]); G.coins += isNew ? 6 : 2; save(); msg = 'Поймал!';
     setTimeout(() => { go(WORLD); say([[G.name, (isNew ? 'Ура! Новый шмыг: ' : 'Ещё один: ') + sp.n + '! Теперь он твой.' + (isNew && sp.e === 'water' && G.ch >= 4 && allOwned().filter(i => itemElem(i) === 'water').length === 1 ? ' На нём можно плавать: просто иди в воду!' : '')]]); }, 1300);
   }
 }
@@ -1064,7 +1111,7 @@ function detail(it) {
 }
 function mapPanel() {
   const s = Math.min(6, Math.floor((Math.min(innerWidth - 60, 700)) / MW) || 3), c = h('canvas', { width: MW * s, height: MH * s, style: 'max-width:100%;display:block;margin:0 auto;border:3px solid #1d2440;border-radius:12px' }), x = c.getContext('2d');
-  const col = { [T.GRASS]: '#83dc58', [T.TALL]: '#4cb84a', [T.RIVER]: '#3fbcf5', [T.SEA]: '#1f8ee3', [T.SAND]: '#f6dc8e', [T.ROCK]: '#8a7f8d', [T.TREE]: '#2d9b52', [T.PATH]: '#ecd09a', [T.FOREST]: '#46a862', [T.FLOWER]: '#83dc58', [T.DUST]: '#dfa86c', [T.DEEP]: '#14568f', [T.CORAL]: '#ff6f91', [T.WEED]: '#2fae7a' };
+  const col = { [T.GRASS]: '#83dc58', [T.TALL]: '#4cb84a', [T.RIVER]: '#3fbcf5', [T.SEA]: '#1f8ee3', [T.SAND]: '#f6dc8e', [T.ROCK]: '#8a7f8d', [T.TREE]: '#2d9b52', [T.PATH]: '#ecd09a', [T.FOREST]: '#46a862', [T.FLOWER]: '#83dc58', [T.DUST]: '#dfa86c', [T.DEEP]: '#14568f', [T.CORAL]: '#ff6f91', [T.WEED]: '#2fae7a', [T.TUNNEL]: '#8a6a52', [T.DIRT]: '#4a3226', [T.STONE]: '#5a5a6e' };
   for (let yy = 0; yy < MH; yy++) for (let xx = 0; xx < MW; xx++) { x.fillStyle = col[map[xx + yy * MW]]; x.fillRect(xx * s, yy * s, s, s); }
   const dot = (px, py, cc, r) => { x.fillStyle = cc; x.strokeStyle = OUT; x.lineWidth = 2; x.beginPath(); x.arc(px * s, py * s, r, 0, 7); x.fill(); x.stroke(); };
   dot(12, 11, '#fff', 6); for (const q of NPCS) { if ((q.w || 0) !== wi) continue; dot(q.x, q.y, G.beaten[q.id] ? '#999' : q.col, 7); x.font = '900 12px Nunito, sans-serif'; x.fillStyle = '#fff'; x.strokeStyle = OUT; x.lineWidth = 3; x.textAlign = 'center'; x.strokeText(q.n, q.x * s, q.y * s - 10); x.fillText(q.n, q.x * s, q.y * s - 10); } dot(hero.x, hero.y, '#ffcf33', 7);
@@ -1217,6 +1264,7 @@ addEventListener('pagehide', () => { G.x = hero.x; G.y = hero.y; save(); });
 { const c = $('ballIco').getContext('2d'); drawBall(c, 20, 20, 17, 0); }
 
 if (G.started && !G.storyV) Object.assign(G, { ch: 1, catches: Math.min(3, Math.max(0, G.mine.length - 1)), cages: [0, 0, 0], bigJump: false, beaten: {}, cup: false, x: 12, y: 14 });
+for (const k of G.dug) MAPS[2][k] = T.TUNNEL;
 wi = G.world || 0; map = MAPS[wi];
 if (!walk(tile(G.x, G.y + .15)) && !(G.ch >= 4 && isWater(tile(G.x, G.y + .15)))) { wi = 0; map = MAPS[0]; G.world = 0; G.x = 12; G.y = 14; } hero.x = G.x; hero.y = G.y; hero.riding = wi === 0 && isWater(tile(G.x, G.y + .15));
 spawnAll(); makePickups(); go(WORLD);
