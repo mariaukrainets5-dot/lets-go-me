@@ -34,6 +34,9 @@ button.plain { background: #fff; }
 #menu button { padding: 3px 0 4px; min-height: 42px; flex-direction: column; gap: 0; font-family: var(--body); font-weight: 900; font-size: 11px; line-height: 1.15; border-width: 2px; border-radius: 10px; box-shadow: 0 2px 0 var(--ink); min-width: 0; }
 #menu button span { font-size: 16px; line-height: 1.2; }
 @media (min-aspect-ratio: 1/1) { #hud { flex-direction: row; justify-content: space-between; align-items: flex-start; } #menu { width: min(58vw, 460px); } }
+#goal { left: max(6px, env(safe-area-inset-left, 0px)); top: calc(env(safe-area-inset-top, 0px) + 92px); max-width: calc(100% - 12px); box-sizing: border-box; background: var(--ink); color: #fff; border-radius: 12px; padding: 4px 10px; font-size: 14px; font-weight: 900; line-height: 1.2; cursor: pointer; }
+#menu button.call { animation: pulse .7s infinite alternate; z-index: 1; }
+@media (min-aspect-ratio: 1/1) { #goal { top: calc(env(safe-area-inset-top, 0px) + 36px); max-width: 38vw; } }
 #pads { right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); display: flex; gap: 10px; align-items: flex-end; }
 #btnJump { width: 92px; height: 92px; border-radius: 50%; font-size: 15px; padding: 0; background: var(--red); color: #fff; }
 #btnJump.call { animation: pulse .7s infinite alternate; }
@@ -46,7 +49,7 @@ button.plain { background: #fff; }
 #talk b { font-family: var(--display); font-weight: 400; color: var(--red); display: block; font-size: 16px; }
 #talk p { margin: 3px 0 0; font-size: 19px; line-height: 1.25; }
 #talk i { display: block; text-align: right; font-style: normal; font-size: 13px; opacity: .65; }
-#toast { pointer-events: none !important; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 94px); background: var(--ink); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 16px; z-index: 9; pointer-events: none; max-width: calc(100vw - 32px); text-align: center; box-sizing: border-box; }
+#toast { pointer-events: none !important; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 124px); background: var(--plum); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 16px; z-index: 9; pointer-events: none; max-width: calc(100vw - 32px); text-align: center; box-sizing: border-box; }
 #veil { position: absolute; inset: 0; z-index: 7; background: rgba(20, 28, 70, .62); display: flex; align-items: center; justify-content: center; padding: calc(env(safe-area-inset-top, 0px) + 10px) 10px calc(env(safe-area-inset-bottom, 0px) + 10px); box-sizing: border-box; }
 #panel { background: var(--paper); border: 4px solid var(--ink); border-radius: 22px; width: min(760px, 100%); max-height: 100%; display: flex; flex-direction: column; box-shadow: 0 8px 0 var(--ink); overflow: hidden; }
 #panelHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: var(--red); color: #fff; border-bottom: 4px solid var(--ink); }
@@ -80,7 +83,7 @@ input[type=text], input[type=number] { font-family: var(--body); font-weight: 90
   #talk p { font-size: 17px; } #talk { padding: 9px 12px; }
 }
 @media (max-height: 500px) {
-  #toast { top: calc(env(safe-area-inset-top, 0px) + 56px); }
+  #toast { top: calc(env(safe-area-inset-top, 0px) + 74px); }
   #panelHead { padding: 5px 12px; } #panelHead h2 { font-size: 17px; } #panelBody { padding: 10px 12px; }
   #talk p { font-size: 15px; } #talk i { display: none; }
   #titleCard h1 { font-size: 26px; }
@@ -96,6 +99,7 @@ input[type=text], input[type=number] { font-family: var(--body); font-weight: 90
       <span class="chip" title="Покеболы"><canvas id="ballIco" width="40" height="40" style="width:16px;height:16px"></canvas><span id="sBalls">0</span></span>
       <span class="chip" title="Монеты">🪙 <span id="sCoins">0</span></span>
       <span class="chip" title="Поймано"><span id="sDex">0/18</span></span>
+      <span class="chip" title="Значки" id="sBadge" hidden></span>
       <span class="chip" id="sCup" hidden>🏆</span>
     </div>
     <div id="menu">
@@ -107,6 +111,7 @@ input[type=text], input[type=number] { font-family: var(--body); font-weight: 90
       <button id="mSound" class="plain" aria-label="Звук">🔊</button>
     </div>
   </div>
+  <div id="goal" class="layer" hidden></div>
   <div id="pads" class="layer" hidden>
     <button id="btnFind">Искать</button>
     <button id="btnJump">Прыжок</button>
@@ -175,15 +180,27 @@ const SPECIES = [
 ];
 const STARTERS = [0, 1, 2];
 const TRAINERS = [
-  { id: 'sonya', n: 'Соня', x: 46, y: 22, col: '#e0529c', team: [[5, 1], [3, 2]], hi: 'Я живу в лесу. Давай биться!' },
-  { id: 'timur', n: 'Тимур', x: 79, y: 20, col: '#3e8f6e', team: [[12, 3], [6, 3], [7, 4]], hi: 'Здесь горы. Мои покемоны крепкие как камень!' },
-  { id: 'mira', n: 'Капитан Мира', x: 72, y: 60, col: '#2d6fd1', team: [[9, 4], [10, 4], [15, 5]], hi: 'Море моё! Сначала победи меня.' },
+  { id: 'helper', n: 'Шнырь', x: 27, y: 11, col: '#5b4a8a', team: [[4, 1], [3, 1]], hi: 'Я помощник Барона Хапуна! Через реку никого не пущу!' },
+  { id: 'sonya', n: 'Соня', x: 46, y: 22, col: '#e0529c', team: [[5, 2], [3, 2]], hi: 'Барон сказал, что ты злой! Сейчас я тебя остановлю!' },
+  { id: 'timur', n: 'Тимур', x: 79, y: 20, col: '#3e8f6e', team: [[12, 3], [6, 3], [7, 4]], hi: 'Горы охраняю я. Мои покемоны крепкие как камень!' },
+  { id: 'mira', n: 'Капитан Мира', x: 82, y: 74, col: '#2d6fd1', team: [[9, 3], [10, 4], [15, 4]], hi: 'Это мой корабль! Хочешь на остров? Сначала победи меня.' },
 ];
-const ASH = { id: 'ash', n: 'Эш', x: 48, y: 75, col: '#d8332f', team: [[13, 6], [14, 6], [16, 7]] };
+const ASH = { id: 'ash', n: 'Эш', x: 15, y: 12, col: '#d8332f' };
+const BARON = { id: 'baron', n: 'Барон Хапун', x: 48, y: 75, col: '#3a2a5e', villain: true, team: [[16, 4], [14, 5], [17, 5]] };
+const NPCS = [...TRAINERS, ASH, BARON];
+const CAGES = [{ x: 38, y: 12, sp: 8 }, { x: 54, y: 34, sp: 11 }, { x: 40, y: 50, sp: 7 }];
+const CHAPTERS = [null, 'Луг', 'Лес', 'Горы', 'Море', 'Замок Хапуна', 'Друзья'];
+const NEXT_CH = { helper: 2, sonya: 3, timur: 4, mira: 5 };
+const CH_SAY = {
+  2: [['Эш', 'Здорово! Теперь ты умеешь прыгать через реку. Жми «Прыжок» у самого берега.'], ['Эш', 'В лесу Хапун запер покемонов в клетки. Открой все клетки и найди Соню.']],
+  3: [['Соня', 'Прости! Барон меня обманул. Он забрал и моих покемонов.'], ['Соня', 'Держи Значок Леса. И кнопку «Искать»: она покажет, где прячутся покемоны.'], ['Эш', 'Дальше горы, но там широкая река. Нужен большой прыжок. Иди в спорт и сделай 5 прыжков за забег!']],
+  4: [['Тимур', 'Ты сильный! Вот тебе Значок Гор.'], ['Эш', 'Теперь плыви! Иди в воду на водяном покемоне. Корабль Капитана Миры на востоке моря.']],
+  5: [['Капитан Мира', 'Ого! Вот Значок Моря. Теперь у тебя три значка.'], ['Эш', 'Три значка открывают ворота. Плыви на остров в море. Там замок Барона Хапуна!']],
+};
 
 /* ---------- сохранение ---------- */
 const KEY = 'pokemon-i-will-catch-you-1';
-const fresh = () => ({ started: false, name: 'Миша', p2: 'Игрок 2', balls: 6, coins: 12, x: 12, y: 14, mine: [], cards: [], team: [], beaten: {}, houses: Array(8).fill(null), cup: false, uid: 1, tips: {}, mute: false });
+const fresh = () => ({ started: false, name: 'Миша', p2: 'Игрок 2', balls: 6, coins: 12, x: 12, y: 14, mine: [], cards: [], team: [], beaten: {}, houses: Array(8).fill(null), cup: false, uid: 1, tips: {}, mute: false, ch: 1, catches: 0, cages: [0, 0, 0], bigJump: false, storyV: 0, loss: {} });
 let G = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) G = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
 let saveFailed = false;
@@ -347,6 +364,23 @@ function drawHero(c, x, y, dir, t, moving, sc) {
   c.beginPath(); c.roundRect(3, -30, 15, 5, 3); c.fill(); c.stroke();
   c.fillStyle = OUT; c.beginPath(); c.arc(6, -22, 2, 0, 7); c.fill(); c.restore();
 }
+function drawVillain(c, x, y, t) {
+  c.save(); c.translate(x, y + Math.sin(t * 2.5) * 1.5); c.scale(1.2, 1.2); c.lineWidth = 3; c.strokeStyle = OUT; c.lineJoin = 'round';
+  c.fillStyle = '#7a1f2f'; c.beginPath(); c.moveTo(-14, -14); c.quadraticCurveTo(-28 + Math.sin(t * 3) * 3, 8, -20, 24); c.lineTo(20, 24); c.quadraticCurveTo(28 - Math.sin(t * 3) * 3, 8, 14, -14); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = '#3a2a5e'; c.beginPath(); c.roundRect(-12, -14, 24, 34, 6); c.fill(); c.stroke();
+  c.fillStyle = '#f0d0b0'; c.beginPath(); c.arc(0, -24, 13, 0, 7); c.fill(); c.stroke();
+  c.fillStyle = OUT; c.beginPath(); c.arc(-5, -26, 2, 0, 7); c.arc(5, -26, 2, 0, 7); c.fill();
+  c.lineWidth = 4; c.beginPath(); c.moveTo(-11, -19); c.quadraticCurveTo(-3, -22, 0, -18); c.quadraticCurveTo(3, -22, 11, -19); c.stroke(); c.lineWidth = 3;
+  c.fillStyle = '#1d2440'; c.beginPath(); c.roundRect(-18, -38, 36, 5, 2); c.fill(); c.stroke(); c.beginPath(); c.roundRect(-11, -60, 22, 23, 3); c.fill(); c.stroke();
+  c.fillStyle = '#ffcf33'; c.fillRect(-10, -43, 20, 5); c.restore();
+}
+function drawShip(c, x, y, t) {
+  c.save(); c.translate(x, y + Math.sin(t * 2) * 2); c.scale(2, 2); c.lineWidth = 2.5; c.strokeStyle = OUT; c.lineJoin = 'round';
+  c.fillStyle = '#8a5a34'; c.beginPath(); c.moveTo(-42, 0); c.lineTo(42, 0); c.lineTo(30, 22); c.lineTo(-30, 22); c.closePath(); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -48); c.stroke();
+  c.fillStyle = '#fffbea'; c.beginPath(); c.moveTo(3, -46); c.quadraticCurveTo(34, -28, 3, -8); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = '#2d6fd1'; c.beginPath(); c.moveTo(-1, -48); c.lineTo(-18, -42); c.lineTo(-1, -37); c.closePath(); c.fill(); c.stroke(); c.restore();
+}
 function drawTrainer(c, x, y, col, t) {
   c.save(); c.translate(x, y + Math.sin(t * 3) * 1); c.lineWidth = 3; c.strokeStyle = OUT;
   c.fillStyle = '#39406b'; c.beginPath(); c.roundRect(-9, 8, 8, 14, 3); c.fill(); c.stroke(); c.beginPath(); c.roundRect(1, 8, 8, 14, 3); c.fill(); c.stroke();
@@ -376,14 +410,15 @@ function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Ma
     map[x + y * MW] = t;
   }
   for (let y = 0; y < MH; y++) {
-    const sh = 63; if (y > sh + 4) break;
+    if (y > 72) break;
     const a = Math.round(R1(y)), b = Math.round(R2(y));
-    for (let i = 0; i < 2; i++) if (y <= SHORE(a + i) + 1) set(a + i, y, T.RIVER);
-    for (let i = 0; i < 3; i++) if (y <= SHORE(b + i) + 1) set(b + i, y, T.RIVER);
+    for (let i = 0; i < 2; i++) if (y <= SHORE(a + i) + 3) set(a + i, y, T.RIVER);
+    for (let i = 0; i < 4; i++) if (y <= SHORE(b + i) + 3) set(b + i, y, T.RIVER);
   }
   disc(12, 13, 7, T.GRASS); for (let x = 5; x < 30; x++) set(x, 13, T.PATH); for (let y = 8; y < 19; y++) set(12, y, T.PATH);
   disc(19, 30, 5, T.SAND); disc(19, 30, 3, T.RIVER);
-  for (const q of TRAINERS) disc(q.x, q.y, 3, map[q.x + q.y * MW] === T.SAND ? T.SAND : q.x > 62 ? T.DUST : T.FOREST);
+  for (const q of TRAINERS) disc(q.x, q.y, 3, map[q.x + q.y * MW] === T.SAND ? T.SAND : q.x < 30 ? T.GRASS : q.x > 62 ? T.DUST : T.FOREST);
+  for (const q of CAGES) disc(q.x, q.y, 2, T.FOREST);
   disc(72, 60, 3, T.SAND);
   disc(48, 75, 6, T.SAND); disc(82, 74, 3, T.SAND);
   for (const [x, y] of [[44, 72], [52, 72], [44, 78], [53, 78]]) set(x, y, T.TREE);
@@ -451,7 +486,11 @@ function closePanel() { $('veil').hidden = true; const f = panelClose; panelClos
 $('panelClose').onclick = () => { sfx.ui(); closePanel(); };
 function syncUI() {
   const world = scene === WORLD, b = $('sBalls');
-  $('hud').hidden = !world; $('pads').hidden = !world || !$('veil').hidden;
+  $('hud').hidden = !world;
+  const q = quest(), panelOpen = !$('veil').hidden, badges = ['sonya', 'timur', 'mira'].filter(k => G.beaten[k]).length;
+  $('goal').hidden = !world || panelOpen; $('goal').textContent = '🎯 ' + q.t; $('sBadge').hidden = !badges; $('sBadge').textContent = '🏅 ' + badges + '/3';
+  $('mTown').classList.toggle('call', world && q.btn === 'mTown'); $('mSport').classList.toggle('call', world && q.btn === 'mSport');
+  $('btnJump').hidden = G.ch < 2; $('btnFind').hidden = !G.beaten.sonya; $('pads').hidden = !world || !$('veil').hidden;
   b.textContent = G.balls; $('sCoins').textContent = G.coins; $('sDex').textContent = caughtSet().size + '/' + SPECIES.length; $('sCup').hidden = !G.cup; $('mSound').textContent = G.mute ? '🔇' : '🔊';
 }
 const busy = () => !$('talk').hidden || !$('veil').hidden;
@@ -459,7 +498,7 @@ function setActs(list) { const a = $('acts'); a.replaceChildren(...list); a.hidd
 
 /* ---------- мир ---------- */
 const hero = { x: G.x, y: G.y, dir: 1, moving: false, t: 0, jump: 0, jx: 0, jy: 0, vx: 0, vy: 0, ox: 0, oy: 0, z: 0, riding: false, radar: 0, target: null };
-let wilds = [], pickups = [], worldT = 0, saveT = 0, hintT = 0, talkCool = 0;
+let goalT = 0, wilds = [], pickups = [], worldT = 0, saveT = 0, hintT = 0, talkCool = 0, bannerT = 0;
 const keys = {}, joy = { on: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
 function waterRide() { return allOwned().find(i => itemElem(i) === 'water'); }
 function spawnWild(z) {
@@ -483,14 +522,14 @@ function makePickups() {
 const wildOK = (w, x, y) => { const t = tile(x, y); return SPECIES[w.sp].e === 'water' ? (isWater(t) || t === T.SAND) : walk(t); };
 function tryStep(nx, ny) {
   const t = tile(nx, ny + .15);
-  if (isWater(t)) { if (waterRide()) { if (!hero.riding) { hero.riding = true; sfx.splash(); toast('Плывём на ' + itemName(waterRide()) + '!'); } return true; }
-    if (hintT <= 0) { toast('Нужен водяной покемон, чтобы плыть. Через реку прыгай!'); hintT = 3; } return false; }
+  if (isWater(t)) { if (G.ch >= 4 && waterRide()) { if (!hero.riding) { hero.riding = true; sfx.splash(); toast('Плывём на ' + itemName(waterRide()) + '!'); } return true; }
+    if (hintT <= 0) { toast(G.ch < 2 ? 'Реку пока не перейти. Победи Шныря у реки' : G.ch < 4 ? 'Плавать пока нельзя. Через реку прыгай!' : 'Нужен водяной покемон, чтобы плыть'); hintT = 3; } return false; }
   if (isSolid(t)) return false;
   if (hero.riding) hero.riding = false;
   return true;
 }
 function doJump() {
-  if (scene !== WORLD || busy() || hero.jump > 0 || hero.riding) return;
+  if (scene !== WORLD || busy() || hero.jump > 0 || hero.riding || G.ch < 2) return;
   let dx = hero.vx, dy = hero.vy, l = Math.hypot(dx, dy); if (l < .01) { dx = hero.dir; dy = 0; l = 1; }
   hero.jump = .52; hero.jx = dx / l; hero.jy = dy / l; hero.ox = hero.x; hero.oy = hero.y; sfx.jump();
 }
@@ -502,7 +541,7 @@ function radar() {
 const WORLD = {
   enter() { setActs([]); $('acts').hidden = true; },
   update(dt) {
-    worldT += dt; hintT -= dt; talkCool -= dt; saveT += dt;
+    worldT += dt; hintT -= dt; talkCool -= dt; saveT += dt; bannerT = Math.max(0, bannerT - dt);
     if (saveT > 4) { saveT = 0; G.x = hero.x; G.y = hero.y; save(); }
     if (hero.radar > 0) hero.radar -= dt;
     if (busy()) { hero.moving = false; return; }
@@ -511,12 +550,12 @@ const WORLD = {
     const l = Math.hypot(dx, dy); if (l > 1) { dx /= l; dy /= l; }
     hero.moving = l > .12; hero.vx = dx; hero.vy = dy; if (Math.abs(dx) > .1) hero.dir = dx > 0 ? 1 : -1; hero.t += dt;
     if (hero.jump > 0) {
-      hero.jump -= dt; hero.x += hero.jx * 9.4 * dt; hero.y += hero.jy * 9.4 * dt; hero.z = Math.sin((1 - hero.jump / .52) * Math.PI) * 54;
+      hero.jump -= dt; const js = G.bigJump ? 9.4 : 6.4; hero.x += hero.jx * js * dt; hero.y += hero.jy * js * dt; hero.z = Math.sin((1 - hero.jump / .52) * Math.PI) * 54;
       hero.x = clamp(hero.x, 1, MW - 1); hero.y = clamp(hero.y, 1, MH - 1);
       if (hero.jump <= 0) {
         hero.z = 0; const t = tile(hero.x, hero.y + .15);
         if (isSolid(t)) { hero.x = hero.ox; hero.y = hero.oy; }
-        else if (isWater(t)) { if (waterRide()) hero.riding = true; else { hero.x = hero.ox; hero.y = hero.oy; sfx.splash(); toast('Плюх! Подбеги ближе к берегу и прыгай'); } }
+        else if (isWater(t)) { if (G.ch >= 4 && waterRide()) hero.riding = true; else { hero.x = hero.ox; hero.y = hero.oy; sfx.splash(); toast(!G.bigJump && hero.ox > 50 ? 'Широкая река! Нужен большой прыжок: иди в спорт' : 'Плюх! Подбеги ближе к берегу и прыгай'); } }
       }
     } else if (hero.moving) {
       const v = (hero.riding ? 5.8 : 5.4) * dt;
@@ -526,6 +565,7 @@ const WORLD = {
     }
     const ahead = isWater(tile(hero.x + hero.dir * 1.4, hero.y)) || (Math.abs(hero.vy) > .3 && isWater(tile(hero.x, hero.y + hero.vy * 1.4)));
     $('btnJump').classList.toggle('call', ahead && !hero.riding && tile(hero.x + hero.dir * 3, hero.y) !== T.SEA);
+    CAGES.forEach((q, i) => { if (!G.cages[i] && Math.hypot(q.x - hero.x, q.y - hero.y) < 1.4 && hero.jump <= 0) openCage(i); });
     for (const w of wilds) {
       w.t += dt; const d = Math.hypot(w.x - hero.x, w.y - hero.y), sp = SPECIES[w.sp]; let s = 1;
       if (w.tired > 0) { w.tired -= dt; s = 0; }
@@ -535,13 +575,14 @@ const WORLD = {
       if (wildOK(w, nx, w.y)) w.x = nx; else w.vx *= -1; if (wildOK(w, w.x, ny)) w.y = ny; else w.vy *= -1;
       if (d < (sp.e === 'water' ? 1.7 : 1) && hero.jump <= 0) { wilds = wilds.filter(q => q !== w); startCatch(w); return; }
     }
+    goalT += dt; if (goalT > .5) { goalT = 0; syncUI(); }
     if (hero.target && !wilds.includes(hero.target)) { hero.target = null; hero.radar = 0; }
     for (const p of pickups) {
       if (p.gone > 0) { p.gone -= dt; continue; }
       if (Math.hypot(p.x - hero.x, p.y - hero.y) < .9) { p.gone = 120; sfx.pick();
         if (p.k === 'ball') { G.balls++; toast('+1 покебол'); } else { G.balls += 3; G.coins += 5; toast('Сундук! +3 покебола и +5 монет'); } save(); syncUI(); }
     }
-    if (talkCool <= 0) for (const q of [...TRAINERS, ASH]) if (Math.hypot(q.x - hero.x, q.y - hero.y) < 1.7) { meet(q); break; }
+    if (talkCool <= 0) for (const q of NPCS) if (Math.hypot(q.x - hero.x, q.y - hero.y) < 1.7) { meet(q); break; }
     if (wilds.length < 22 && Math.random() < dt * .6) spawnWild(pick([0, 1, 2, 3, 3, 4]));
   },
   draw(c, dt) {
@@ -563,7 +604,9 @@ const WORLD = {
     list.push({ y: 11 * TS, k: 2 });
     for (const p of pickups) if (p.gone <= 0) list.push({ y: p.y * TS, k: 3, p });
     for (const w of wilds) list.push({ y: w.y * TS, k: 4, w });
-    for (const q of [...TRAINERS, ASH]) list.push({ y: q.y * TS, k: 5, q });
+    for (const q of NPCS) list.push({ y: q.y * TS, k: 5, q });
+    CAGES.forEach((q, i) => list.push({ y: q.y * TS, k: 7, q, i }));
+    list.push({ y: 72.6 * TS, k: 8 }, { y: 73.6 * TS, k: 9 });
     list.push({ y: hero.y * TS + 1, k: 6 });
     list.sort((a, b) => a.y - b.y);
     for (const e of list) {
@@ -573,7 +616,10 @@ const WORLD = {
       else if (e.k === 3) { const px = e.p.x * TS, py = e.p.y * TS, b = Math.sin(worldT * 4 + px) * 2; c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); ell(c, px, py + 10, 11, 4); c.fill();
         if (e.p.k === 'ball') drawBall(c, px, py + b, 9, 0); else { c.lineWidth = 3; c.strokeStyle = OUT; c.fillStyle = '#c47a2c'; c.beginPath(); c.roundRect(px - 14, py - 12 + b, 28, 21, 4); c.fill(); c.stroke(); c.fillStyle = '#ffcf33'; c.fillRect(px - 3, py - 5 + b, 6, 7); } }
       else if (e.k === 4) { const w = e.w, sp = SPECIES[w.sp], px = w.x * TS, py = w.y * TS, inW = isWater(tile(w.x, w.y)); c.fillStyle = inW ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.18)'; c.beginPath(); ell(c, px, py + 15, 19, 6); c.fill(); drawCreature(c, sp, px, py - 8 + (w.tired > 0 ? 0 : Math.abs(Math.sin(w.t * 7)) * -5), 21 + sp.r * 2, w.t, w.vx < 0); if (w.tired > 0) hugeText(c, 'уф!', px, py - 42, 15, '#fff'); else if (!caughtSet().has(w.sp)) hugeText(c, 'NEW', px, py - 42, 12, '#ffcf33'); }
-      else if (e.k === 5) { const q = e.q, px = q.x * TS, py = q.y * TS; c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); ell(c, px, py + 22, 16, 5); c.fill(); drawTrainer(c, px, py, q.col, worldT); hugeText(c, q.n, px, py - 46, 14, '#fff'); if (!G.beaten[q.id]) hugeText(c, '!', px, py - 62 + Math.sin(worldT * 5) * 3, 24, '#ffcf33'); }
+      else if (e.k === 5) { const q = e.q, px = q.x * TS, py = q.y * TS; c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); ell(c, px, py + 22, 16, 5); c.fill(); if (q.villain) drawVillain(c, px, py, worldT); else drawTrainer(c, px, py, q.col, worldT); hugeText(c, q.n, px, py - (q.villain ? 64 : 46), 14, '#fff'); if (q !== ASH && !G.beaten[q.id]) hugeText(c, '!', px, py - (q.villain ? 80 : 62) + Math.sin(worldT * 5) * 3, 24, '#ffcf33'); }
+      else if (e.k === 7) { const px = e.q.x * TS, py = e.q.y * TS; drawCreature(c, SPECIES[e.q.sp], px, py - 6, 20, worldT); if (!G.cages[e.i]) { c.strokeStyle = OUT; c.lineWidth = 5; for (let i = -2; i <= 2; i++) { c.beginPath(); c.moveTo(px + i * 11, py - 32); c.lineTo(px + i * 11, py + 18); c.stroke(); } c.lineWidth = 6; c.beginPath(); c.roundRect(px - 28, py - 34, 56, 54, 5); c.stroke(); } }
+      else if (e.k === 8) drawHouse(c, 48 * TS, 71.6 * TS, 'castle', 2.3);
+      else if (e.k === 9) drawShip(c, 82 * TS, 72.6 * TS, worldT);
       else if (e.k === 6) {
         const hx = wx, hy = wy; c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); ell(c, hx, hy + 22, 15 - hero.z * .08, 5); c.fill();
         if (hero.riding) { const r = waterRide(), wob = Math.sin(worldT * 5) * 3; c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 3; c.beginPath(); ell(c, hx, hy + 18, 34 + wob, 12); c.stroke();
@@ -585,32 +631,73 @@ const WORLD = {
     if (hero.radar > 0 && hero.target) { const t = hero.target, a = Math.atan2(t.y - hero.y, t.x - hero.x), px = wx + Math.cos(a) * 62, py = wy - 16 + Math.sin(a) * 62;
       c.save(); c.translate(px, py); c.rotate(a); c.fillStyle = '#ffcf33'; c.strokeStyle = OUT; c.lineWidth = 3; c.beginPath(); c.moveTo(20, 0); c.lineTo(-10, -13); c.lineTo(-4, 0); c.lineTo(-10, 13); c.closePath(); c.fill(); c.stroke(); c.restore();
       c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 3; c.beginPath(); c.arc(wx, wy, (4 - hero.radar) % 1 * 130, 0, 7); c.stroke(); }
+    const qt = questTarget(quest());
+    if (qt && Math.hypot(qt.x - hero.x, qt.y - hero.y) > 5 && hero.radar <= 0) { const a = Math.atan2(qt.y - hero.y, qt.x - hero.x), px = wx + Math.cos(a) * 66, py = wy - 16 + Math.sin(a) * 66 + Math.sin(worldT * 5) * 3;
+      c.save(); c.translate(px, py); c.rotate(a); c.fillStyle = '#ef3e42'; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.moveTo(20, 0); c.lineTo(-10, -13); c.lineTo(-4, 0); c.lineTo(-10, 13); c.closePath(); c.fill(); c.stroke(); c.restore(); }
     c.restore();
+    if (bannerT > 0) { c.fillStyle = 'rgba(29,36,64,.72)'; c.fillRect(0, H * .3, W, 92); hugeText(c, 'Глава ' + G.ch, W / 2, H * .3 + 32, 22, '#ffcf33'); hugeText(c, CHAPTERS[G.ch], W / 2, H * .3 + 74, Math.min(38, W * .09), '#fff'); }
     if (joy.on) { c.fillStyle = 'rgba(255,255,255,.22)'; c.strokeStyle = 'rgba(29,36,64,.5)'; c.lineWidth = 3; c.beginPath(); c.arc(joy.ox, joy.oy, 54, 0, 7); c.fill(); c.stroke(); c.fillStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(joy.ox + joy.x * 46, joy.oy + joy.y * 46, 24, 0, 7); c.fill(); c.stroke(); }
     drawFx(c, dt);
   },
 };
+function quest() {
+  const near = f => { let b = null, d = 1e9; for (const w of wilds) { const k = Math.hypot(w.x - hero.x, w.y - hero.y); if (f(w) && k < d) { d = k; b = w; } } return b; };
+  const left = CAGES.filter((q, i) => !G.cages[i]).sort((a, b) => Math.hypot(a.x - hero.x, a.y - hero.y) - Math.hypot(b.x - hero.x, b.y - hero.y));
+  switch (G.ch) {
+    case 1:
+      if (G.catches < 3) return { t: 'Поймай покемонов: ' + G.catches + ' из 3', to: near(w => zoneOf(w.x, w.y) === 0 && SPECIES[w.sp].e !== 'water') };
+      if (!G.houses.some(x => x && x.who)) return { t: 'Построй домик для покемона', btn: 'mTown' };
+      return { t: 'Победи Шныря у реки', to: TRAINERS[0] };
+    case 2:
+      if (left.length) return { t: 'Открой клетки в лесу: ' + (3 - left.length) + ' из 3', to: left[0] };
+      return { t: 'Найди Соню в лесу', to: TRAINERS[1] };
+    case 3:
+      if (!G.bigJump) return { t: 'Спорт: сделай 5 прыжков за забег', btn: 'mSport' };
+      return { t: 'Перепрыгни широкую реку и найди Тимура', to: TRAINERS[2] };
+    case 4:
+      if (!waterRide()) return { t: 'Поймай водяного покемона', to: near(w => SPECIES[w.sp].e === 'water') };
+      return { t: 'Плыви на корабль Капитана Миры', to: TRAINERS[3] };
+    case 5: return { t: 'Плыви на остров и победи Барона Хапуна', to: BARON };
+    default: { const n = caughtSet().size; return n < SPECIES.length ? { t: 'Собери всех покемонов: ' + n + ' из ' + SPECIES.length, to: near(w => !caughtSet().has(w.sp)) } : { t: 'Ты собрал всех! Ты лучший ловец!' }; }
+  }
+}
+const questTarget = q => q && q.to || null;
+function startChapter(n) {
+  G.ch = n; save(); bannerT = 3; sfx.win(); syncUI();
+  say(CH_SAY[n] || [], syncUI);
+}
+function openCage(i) {
+  G.cages[i] = 1; const sp = CAGES[i].sp, it = addCreature(sp, 2), slot = G.houses.findIndex(x => !x);
+  if (slot >= 0) G.houses[slot] = { id: 'mush', who: it.uid };
+  save(); sfx.caught(); syncUI();
+  const left = G.cages.filter(x => !x).length;
+  say([[SPECIES[sp].n, 'Спасибо, ' + G.name + '! Теперь я с тобой, а в городке у меня новый домик.' + (left ? ' Осталось клеток: ' + left + '.' : ' Все клетки открыты! Теперь ищи Соню.')]]);
+}
 function meet(q) {
   talkCool = 3;
   if (q === ASH) {
-    if (G.cup) { G.balls += 3; save(); syncUI(); talkCool = 40; say([['Эш', 'Привет, друг! Держи ещё 3 покебола. Лови всех!']]); return; }
-    const need = TRAINERS.filter(t => !G.beaten[t.id]);
-    if (need.length) { say([['Эш', 'Привет, ' + G.name + '! Ты доплыл! Но сначала победи тренеров: ' + need.map(t => t.n).join(', ') + '. Потом приходи ко мне.']]); talkCool = 8; return; }
-    say([['Эш', 'Ты победил всех тренеров! Теперь последний бой: ты против меня. Вперёд!']], () => startBattle(q));
-    return;
+    if (G.ch >= 6) { G.balls += 3; save(); syncUI(); talkCool = 40; say([['Эш', 'Привет, друг! Держи ещё 3 покебола. Лови всех!']]); return; }
+    talkCool = 10; say([['Эш', G.name + ', сейчас твоя цель: ' + quest().t + '.']]); return;
+  }
+  if (q === BARON) {
+    if (G.ch >= 6) { talkCool = 40; G.coins += 5; save(); syncUI(); say([['Барон Хапун', 'Привет, друг! Держи 5 монет. Заходи ещё, мне теперь не скучно.']]); return; }
+    if (G.ch < 5) { talkCool = 8; say([['Барон Хапун', 'Ха-ха! Ворота заперты. Без трёх значков ты меня не победишь!']]); return; }
+    say([['Барон Хапун', 'Ты дошёл до замка? Покемоны и кубок мои! Сейчас увидишь мою команду!']], () => startBattle(q)); return;
   }
   if (G.beaten[q.id]) { talkCool = 12; return; }
+  if (q.id === 'sonya' && G.cages.some(x => !x)) { talkCool = 8; say([['Соня', 'Сначала открой все клетки, а потом приходи.']]); return; }
+  if (q.id === 'helper' && (G.catches < 3 || !G.houses.some(x => x && x.who))) { talkCool = 8; say([['Шнырь', 'Ха! Сначала ' + quest().t.toLowerCase() + '. Потом поговорим!']]); return; }
   say([[q.n, q.hi]], () => startBattle(q));
 }
 const fighterFromSpec = ([sp, lvl]) => { const f = fighter({ sp, lvl }); f.atk = Math.round(f.atk * .85); return f; };
 function startBattle(q) {
-  const mine = teamItems();
-  battle({ a: mine.map(fighter), b: q.team.map(fighterFromSpec), nameA: G.name, nameB: q.n, bgZone: zoneOf(q.x, q.y), onEnd(win) {
+  const mine = teamItems(), lost = G.loss[q.id] || 0, soft = 1 - .12 * Math.min(3, lost); /* после каждого проигрыша бой чуть легче, чтобы ребёнок не застрял */
+  battle({ a: mine.map(fighter), b: q.team.map(fighterFromSpec).map(f => { f.max = f.hp = Math.round(f.hp * soft); f.atk = Math.round(f.atk * soft); return f; }), nameA: G.name, nameB: q.n, bgZone: zoneOf(q.x, q.y), onEnd(win) {
     if (win) {
-      const first = !G.beaten[q.id]; G.beaten[q.id] = true; G.coins += 15; mine.forEach(i => gainXP(i, 8)); save();
-      if (q === ASH) { G.cup = true; G.coins += 50; G.balls += 10; save(); go(TROPHY); return; }
-      go(WORLD); say([[q.n, 'Ух ты, ты сильный! Держи 15 монет.' + (first && TRAINERS.every(t => G.beaten[t.id]) ? ' Теперь плыви на остров к Эшу, на юге моря!' : '')]]);
-    } else { mine.forEach(i => gainXP(i, 3)); talkCool = 6; hero.y -= 2.5; go(WORLD); say([[q.n, 'Почти! Сходи в спорт, потренируй покемонов и возвращайся.']]); }
+      G.beaten[q.id] = true; G.coins += 15; mine.forEach(i => gainXP(i, 12)); save();
+      if (q === BARON) { G.cup = true; G.ch = 6; G.coins += 50; G.balls += 10; save(); go(TROPHY); return; }
+      go(WORLD); startChapter(NEXT_CH[q.id]);
+    } else { G.loss[q.id] = lost + 1; mine.forEach(i => gainXP(i, 8)); talkCool = 6; hero.y -= 2.5; go(WORLD); say([[q.n, 'Почти! Сходи в спорт, потренируй покемонов и возвращайся.']]); }
   } });
 }
 
@@ -660,8 +747,8 @@ function startCatch(w) {
   function broke() { tries++; mode = 'broke'; hideC = false; ball.t = 0; msg = 'Вырвался!'; sfx.fail(); burst(ball.ex, ball.ey, 14, ['#ef3e42', '#fff']); }
   function done() {
     mode = 'caught'; wob = 0; sfx.caught(); burst(ball.ex, ball.ey, 70, ['#ffcf33', '#ef3e42', '#2fa8f4', '#58c84a', '#fff']);
-    const isNew = !caughtSet().has(w.sp); addCreature(w.sp, 1 + (sp.r - 1) * 2); G.coins += isNew ? 6 : 2; save(); msg = 'Поймал!';
-    setTimeout(() => { go(WORLD); say([[G.name, (isNew ? 'Ура! Новый покемон: ' : 'Ещё один: ') + sp.n + '! Теперь он твой.' + (isNew && sp.e === 'water' && allOwned().filter(i => itemElem(i) === 'water').length === 1 ? ' На нём можно плавать: просто иди в воду!' : '')]]); }, 1300);
+    const isNew = !caughtSet().has(w.sp); G.catches++; addCreature(w.sp, 1 + (sp.r - 1) * 2 + [0, 1, 2, 2, 3][z]); G.coins += isNew ? 6 : 2; save(); msg = 'Поймал!';
+    setTimeout(() => { go(WORLD); say([[G.name, (isNew ? 'Ура! Новый покемон: ' : 'Ещё один: ') + sp.n + '! Теперь он твой.' + (isNew && sp.e === 'water' && G.ch >= 4 && allOwned().filter(i => itemElem(i) === 'water').length === 1 ? ' На нём можно плавать: просто иди в воду!' : '')]]); }, 1300);
   }
 }
 
@@ -669,7 +756,7 @@ function startCatch(w) {
 function fighter(it) {
   if (it.img !== undefined) {
     const lvl = it.lvl || 1, hp = clamp(Math.round(34 + (it.hp || 60) / 4), 40, 110) + (lvl - 1) * 7, atk = clamp(Math.round(9 + (it.atk || 30) / 12), 10, 20) + lvl;
-    return { name: it.name, elem: it.elem, hp, max: hp, atk, charge: 0, img: cardImg(it.img), moves: [{ n: 'Удар', p: 1 }, { n: it.moves && it.moves[0] || ELEM[it.elem].n, p: 1.3, e: it.elem }, { n: 'Супер: ' + (it.moves && it.moves[1] || it.moves && it.moves[0] || ELEM[it.elem].n), p: 2.1, e: it.elem, sup: true }] };
+    return { name: it.name, elem: it.elem, hp, max: hp, atk, charge: 2, img: cardImg(it.img), moves: [{ n: 'Удар', p: 1 }, { n: it.moves && it.moves[0] || ELEM[it.elem].n, p: 1.3, e: it.elem }, { n: 'Супер: ' + (it.moves && it.moves[1] || it.moves && it.moves[0] || ELEM[it.elem].n), p: 2.1, e: it.elem, sup: true }] };
   }
   const sp = SPECIES[it.sp], hp = 36 + it.lvl * 8 + sp.r * 6, atk = 9 + it.lvl * 2 + sp.r;
   return { name: sp.n, elem: sp.e, hp, max: hp, atk, charge: 0, sp, moves: [{ n: 'Удар', p: 1 }, { n: sp.m, p: 1.3, e: sp.e }, { n: 'Супер: ' + sp.m, p: 2.1, e: sp.e, sup: true }] };
@@ -736,12 +823,11 @@ function battle(o) {
 }
 /* финал: кубок от Эша */
 const TROPHY = {
-  t: 0, enter() { this.t = 0; sfx.win(); burst(W / 2, H / 3, 120, ['#ffcf33', '#ef3e42', '#2fa8f4', '#58c84a', '#fff']); setActs([h('button', { className: 'red', text: 'Играть дальше', on: () => { setActs([]); go(WORLD); } })]);
-    say([['Эш', 'Ты победил! Ты самый лучший ловец!'], ['Эш', 'Вот твой приз: золотой кубок, 50 монет и 10 покеболов.'], ['Эш', 'Теперь мы с тобой друзья, ' + G.name + '!']]); },
+  t: 0, enter() { this.t = 0; sfx.win(); burst(W / 2, H / 3, 120, ['#ffcf33', '#ef3e42', '#2fa8f4', '#58c84a', '#fff']); setActs([]);
+    say([['Барон Хапун', 'Ой-ой… Ты победил. Забирай всех покемонов и кубок.'], ['Барон Хапун', 'Я забирал покемонов, потому что у меня никогда не было друзей.'], [G.name, 'Давай дружить! Только больше никого не забирай.'], ['Барон Хапун', 'Правда? Спасибо! Я всё починю.'], ['Эш', 'Ты спас всех, ' + G.name + '! Вот твой приз: Золотой кубок, 50 монет и 10 покеболов.'], ['Эш', 'Теперь мы все друзья!']], () => { go(WORLD); bannerT = 3; syncUI(); }); },
   update(dt) { this.t += dt; if (Math.random() < dt * 3) burst(rnd(0, W), rnd(0, H / 2), 16, ['#ffcf33', '#fff', '#ef3e42']); },
-  draw(c, dt) { stage(c, 4); const x = W / 2, y = H * .36, k = Math.min(W, H) / 400; c.save(); c.translate(x, y + Math.sin(this.t * 2) * 6); c.scale(k, k); c.lineWidth = 6; c.strokeStyle = OUT; c.fillStyle = '#ffcf33'; c.beginPath(); c.moveTo(-60, -80); c.lineTo(60, -80); c.quadraticCurveTo(58, 10, 12, 26); c.lineTo(12, 56); c.lineTo(40, 76); c.lineTo(-40, 76); c.lineTo(-12, 56); c.lineTo(-12, 26); c.quadraticCurveTo(-58, 10, -60, -80); c.closePath(); c.fill(); c.stroke(); for (const s of [-1, 1]) { c.beginPath(); c.arc(s * 66, -48, 24, s > 0 ? -1.6 : 1.6 - Math.PI * 2, s > 0 ? 1.6 : 4.7); c.stroke(); } c.restore(); drawTrainer(c, x - 120 * k, H * .62, ASH.col, this.t); drawHero(c, x + 120 * k, H * .62, -1, this.t, false); hugeText(c, 'Чемпион ' + G.name + '!', W / 2, 70, Math.min(36, W * .08), '#ffcf33'); drawFx(c, dt); },
+  draw(c, dt) { stage(c, 4); const x = W / 2, y = H * .34, k = Math.min(W, H) / 480; c.save(); c.translate(x, y + Math.sin(this.t * 2) * 6); c.scale(k, k); c.lineWidth = 6; c.strokeStyle = OUT; c.fillStyle = '#ffcf33'; c.beginPath(); c.moveTo(-60, -80); c.lineTo(60, -80); c.quadraticCurveTo(58, 10, 12, 26); c.lineTo(12, 56); c.lineTo(40, 76); c.lineTo(-40, 76); c.lineTo(-12, 56); c.lineTo(-12, 26); c.quadraticCurveTo(-58, 10, -60, -80); c.closePath(); c.fill(); c.stroke(); for (const s of [-1, 1]) { c.beginPath(); c.arc(s * 66, -48, 24, s > 0 ? -1.6 : 1.6 - Math.PI * 2, s > 0 ? 1.6 : 4.7); c.stroke(); } c.restore(); const yy = H * .6; drawTrainer(c, x - W * .3, yy, ASH.col, this.t); drawHero(c, x, yy, 1, this.t, false); drawVillain(c, x + W * .3, yy, this.t); hugeText(c, 'Чемпион ' + G.name + '!', W / 2, 54, Math.min(32, W * .08), '#ffcf33'); drawFx(c, dt); },
 };
-
 /* ---------- спорт: барьеры ---------- */
 function sportPick() {
   const list = allOwned(), g = h('div', { className: 'grid' });
@@ -752,8 +838,8 @@ function startSport(it) {
   let t = 0, y = 0, vy = 0, obs = [], next = 1, score = 0, stun = 0, over = false, scroll = 0;
   const DUR = 25, gy = () => H * .7, px = () => Math.min(W * .24, 160), S = () => Math.min(W, H) * .1;
   const jump = () => { if (over) return; if (y === 0) { vy = -Math.max(640, H * 1.05); sfx.jump(); } };
-  const finish = () => { over = true; const xp = score * 2 + 2, coins = Math.floor(score / 2); gainXP(it, xp); G.coins += coins; save();
-    setTimeout(() => { setActs([]); go(WORLD); say([[itemName(it), 'Я прыгнул ' + score + ' раз! Опыт +' + xp + ', монеты +' + coins + '.']]); }, 1200); };
+  const finish = () => { over = true; const xp = score * 2 + 2, coins = Math.floor(score / 2), big = G.ch === 3 && !G.bigJump && score >= 5; gainXP(it, xp); G.coins += coins; if (big) G.bigJump = true; save();
+    setTimeout(() => { setActs([]); go(WORLD); say([[itemName(it), 'Я прыгнул ' + score + ' раз! Опыт +' + xp + ', монеты +' + coins + '.']].concat(big ? [['Эш', 'Ура, большой прыжок! Теперь широкая река тебе по силам.']] : G.ch === 3 && !G.bigJump ? [['Эш', 'Нужно 5 прыжков за забег. Попробуй ещё!']] : []), syncUI); }, 1200); };
   const img = it.img !== undefined ? cardImg(it.img) : null;
   go({
     tap: jump, enter() { setActs([]); },
@@ -855,8 +941,8 @@ function mapPanel() {
   const col = { [T.GRASS]: '#83dc58', [T.TALL]: '#4cb84a', [T.RIVER]: '#3fbcf5', [T.SEA]: '#1f8ee3', [T.SAND]: '#f6dc8e', [T.ROCK]: '#8a7f8d', [T.TREE]: '#2d9b52', [T.PATH]: '#ecd09a', [T.FOREST]: '#46a862', [T.FLOWER]: '#83dc58', [T.DUST]: '#dfa86c' };
   for (let yy = 0; yy < MH; yy++) for (let xx = 0; xx < MW; xx++) { x.fillStyle = col[map[xx + yy * MW]]; x.fillRect(xx * s, yy * s, s, s); }
   const dot = (px, py, cc, r) => { x.fillStyle = cc; x.strokeStyle = OUT; x.lineWidth = 2; x.beginPath(); x.arc(px * s, py * s, r, 0, 7); x.fill(); x.stroke(); };
-  dot(12, 11, '#fff', 6); for (const q of [...TRAINERS, ASH]) { dot(q.x, q.y, G.beaten[q.id] ? '#999' : q.col, 7); x.font = '900 12px Nunito, sans-serif'; x.fillStyle = '#fff'; x.strokeStyle = OUT; x.lineWidth = 3; x.textAlign = 'center'; x.strokeText(q.n, q.x * s, q.y * s - 10); x.fillText(q.n, q.x * s, q.y * s - 10); } dot(hero.x, hero.y, '#ffcf33', 7);
-  openPanel('Карта', [c, h('p', { text: 'Жёлтая точка: ты. Серые тренеры уже побеждены. Эш живёт на острове в море.' })]);
+  dot(12, 11, '#fff', 6); for (const q of NPCS) { dot(q.x, q.y, G.beaten[q.id] ? '#999' : q.col, 7); x.font = '900 12px Nunito, sans-serif'; x.fillStyle = '#fff'; x.strokeStyle = OUT; x.lineWidth = 3; x.textAlign = 'center'; x.strokeText(q.n, q.x * s, q.y * s - 10); x.fillText(q.n, q.x * s, q.y * s - 10); } dot(hero.x, hero.y, '#ffcf33', 7);
+  openPanel('Карта', [c, h('p', { text: 'Жёлтая точка: ты. Серые тренеры уже побеждены. Замок Барона Хапуна на острове в море.' })]);
 }
 
 /* ---------- карточки: скан и дуэль ---------- */
@@ -953,9 +1039,21 @@ function titleScreen() {
   const head = h('div', { id: 'titleCard' }, h('h1', { text: 'Pokemon I Will Catch You' }), h('p', { text: 'Лови покемонов, перепрыгивай реки, плавай на них, бейся с тренерами и получи приз от Эша.' }));
   openPanel('Новая игра', [head, h('label', { htmlFor: 'heroName', text: 'Как тебя зовут?' }), nameI, h('h3', { text: 'Выбери первого покемона' }), g, h('p', { style: 'font-size:13px;opacity:.7;margin-top:12px', text: 'Домашняя фан-игра Миши. Покемоны здесь придуманы и нарисованы для этой игры, это не официальная игра Pokémon.' })], null, true);
 }
+function cutscene(paint, lines, then) {
+  let t = 0; go({ enter() { setActs([]); }, update(dt) { t += dt; }, draw(c, dt) { paint(c, t); drawFx(c, dt); } }); say(lines, then);
+}
+function nightScene(c, t) {
+  const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#141b4d'); g.addColorStop(.7, '#3a2a7a'); g.addColorStop(.701, '#27663f'); g.addColorStop(1, '#1d4f33'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.fillStyle = '#fff'; for (let i = 0; i < 40; i++) { c.globalAlpha = .4 + .5 * Math.abs(Math.sin(t + i)); c.fillRect((i * 97) % W, (i * 53) % (H * .6), 3, 3); } c.globalAlpha = 1;
+  const k = Math.min(W, H) / 400, y = H * .66; drawHouse(c, W * .24, y, 'home', 1.5 * k);
+  c.save(); c.translate(W * .68, y - 10 + Math.sin(t * 2) * 6); c.scale(1.7 * k, 1.7 * k); drawVillain(c, 0, 0, t); c.restore();
+  drawCreature(c, SPECIES[3], W * .48, y + 34 * k, 18 * k, t); c.strokeStyle = OUT; c.lineWidth = 4; for (let i = -2; i <= 2; i++) { c.beginPath(); c.moveTo(W * .48 + i * 10 * k, y + 8 * k); c.lineTo(W * .48 + i * 10 * k, y + 58 * k); c.stroke(); }
+  hugeText(c, 'Pokemon I Will Catch You', W / 2, 60, Math.min(30, W * .065), '#ffcf33');
+}
 function intro() {
-  const k = 'ontouchstart' in window ? 'Двигайся пальцем по левой части экрана.' : 'Ходи стрелками, прыгай пробелом.';
-  say([['Эш', 'Привет, ' + G.name + '! Я Эш. ' + k], ['Эш', 'Покемоны прячутся и убегают. Догони их и брось покебол! Кнопка «Искать» покажет, куда бежать.'], ['Эш', 'Реки перепрыгивай. Поймай водяного покемона, и сможешь плавать на нём по морю.'], ['Эш', 'Победи трёх тренеров и приплыви ко мне на остров. Там тебя ждёт приз!']]);
+  G.storyV = 1; save();
+  const k = 'ontouchstart' in window ? 'Двигайся пальцем по экрану.' : 'Ходи стрелками.';
+  cutscene(nightScene, [['Ночь', 'Однажды ночью в городок пришёл Барон Хапун.'], ['Барон Хапун', 'Ха-ха! Все покемоны будут мои! И Золотой кубок Эша тоже!'], ['Эш', G.name + ', просыпайся! Хапун забрал покемонов и мой кубок.'], ['Эш', 'Только ты можешь их вернуть. Твой первый покемон с тобой.'], ['Эш', k + ' Красная стрелка показывает, куда идти, а цель написана наверху.']], () => { go(WORLD); bannerT = 3; syncUI(); });
 }
 
 /* ---------- управление и цикл ---------- */
@@ -991,8 +1089,10 @@ $('mSound').onclick = () => { G.mute = !G.mute; save(); syncUI(); };
 addEventListener('pagehide', () => { G.x = hero.x; G.y = hero.y; save(); });
 { const c = $('ballIco').getContext('2d'); drawBall(c, 20, 20, 17, 0); }
 
+if (G.started && !G.storyV) Object.assign(G, { ch: 1, catches: Math.min(3, Math.max(0, G.mine.length - 1)), cages: [0, 0, 0], bigJump: false, beaten: {}, cup: false, x: 12, y: 14 });
+if (!walk(tile(G.x, G.y + .15))) { G.x = 12; G.y = 14; } hero.x = G.x; hero.y = G.y;
 spawnAll(); makePickups(); go(WORLD);
-if (!G.started) titleScreen();
+if (!G.started) titleScreen(); else if (!G.storyV) intro();
 let last = performance.now();
 function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now;
