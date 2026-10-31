@@ -184,6 +184,12 @@ const SPECIES = [
   { n: 'Волнодав', e: 'water', r: 3, z: [3, 4], s: 'dino', a: '#2356c9', b: '#a6e2ff', top: 'drop', m: 'Цунами' },
   { n: 'Кристаллон', e: 'rock', r: 3, z: [2], s: 'golem', a: '#37c7b7', b: '#c8fff4', top: 'crystal', m: 'Алмазный луч' },
   { n: 'Звездун', e: 'spirit', r: 3, z: [4], s: 'ghost', a: '#ff8fd8', b: '#fff0fa', top: 'star', m: 'Звездопад' },
+  { n: 'Пузырик', e: 'water', r: 1, z: [5], s: 'blob', a: '#7fd8ff', b: '#e4f8ff', top: 'drop', m: 'Пузыри' },
+  { n: 'Кальмарик', e: 'water', r: 1, z: [5], s: 'ghost', a: '#ff7fb0', b: '#ffe0ec', top: '', m: 'Чернила' },
+  { n: 'Крабчик', e: 'rock', r: 1, z: [5], s: 'golem', a: '#e2552e', b: '#ffd0b0', top: 'horn', m: 'Клешня' },
+  { n: 'Жемчужка', e: 'spirit', r: 2, z: [5], s: 'blob', a: '#efe2ff', b: '#ffffff', top: 'star', m: 'Блеск' },
+  { n: 'Искроугорь', e: 'electric', r: 2, z: [5], s: 'fish', a: '#3a3f8f', b: '#ffe05a', top: 'bolt', m: 'Разряд' },
+  { n: 'Глубинник', e: 'water', r: 3, z: [5], s: 'whale', a: '#1b2f6b', b: '#9fc4ff', top: '', m: 'Глубинная волна' },
 ];
 const STARTERS = [0, 1, 2];
 const TRAINERS = [
@@ -194,20 +200,28 @@ const TRAINERS = [
 ];
 const RAY = { id: 'ray', n: 'Рэй', x: 15, y: 12, col: '#2f8f5b' };
 const BARON = { id: 'baron', n: 'Барон Хапун', x: 48, y: 75, col: '#3a2a5e', villain: true, team: [[16, 4], [14, 5], [17, 5]] };
-const NPCS = [...TRAINERS, RAY, BARON];
+const SNAP = { id: 'snap', w: 1, n: 'Краб Щёлк', x: 44, y: 32, col: '#e2552e', team: [[21, 4], [18, 5]], hi: 'Щёлк-щёлк! Адмирал никого не пускает!' };
+const ADMIRAL = { id: 'admiral', w: 1, n: 'Адмирал Глубь', x: 78, y: 66, col: '#1b2f6b', team: [[22, 5], [20, 5], [23, 6]], hi: 'Барон стал добрым? Смешно! Жемчужная медаль моя!' };
+const VINTIK = { id: 'vintik', n: 'Механик Винтик', x: 16, y: 63, col: '#c47a2c' };
+const NPCS = [...TRAINERS, RAY, BARON, VINTIK, SNAP, ADMIRAL];
+const HOLE = { x: 24, y: 76 }, PORTAL = { x: 12, y: 12, w: 1 };
+const PARTS = [{ x: 8, y: 32, n: 'винт' }, { x: 50, y: 42, n: 'стекло' }, { x: 84, y: 40, n: 'мотор' }];
 const CAGES = [{ x: 38, y: 12, sp: 8 }, { x: 54, y: 34, sp: 11 }, { x: 40, y: 50, sp: 7 }];
-const CHAPTERS = [null, 'Луг', 'Лес', 'Горы', 'Море', 'Замок Хапуна', 'Друзья'];
-const NEXT_CH = { helper: 2, sonya: 3, timur: 4, mira: 5 };
+const CHAPTERS = [null, 'Луг', 'Лес', 'Горы', 'Море', 'Замок Хапуна', 'Дырка в море', 'Механик Винтик', 'Подводный мир', 'Подземный мир'];
+const NEXT_CH = { helper: 2, sonya: 3, timur: 4, mira: 5, admiral: 9 };
 const CH_SAY = {
   2: [['Рэй', 'Здорово! Теперь ты умеешь прыгать через реку. Жми «Прыжок» у самого берега.'], ['Рэй', 'В лесу Хапун запер шмыгов в клетки. Открой все клетки и найди Соню.']],
   3: [['Соня', 'Прости! Барон меня обманул. Он забрал и моих шмыгов.'], ['Соня', 'Держи Значок Леса. И кнопку «Искать»: она покажет, где прячутся шмыги.'], ['Рэй', 'Дальше горы, но там широкая река. Нужен большой прыжок. Иди в спорт и сделай 5 прыжков за забег!']],
   4: [['Тимур', 'Ты сильный! Вот тебе Значок Гор.'], ['Рэй', 'Теперь плыви! Иди в воду на водяном шмыге. Корабль Капитана Миры на востоке моря.']],
+  7: [['Рейнджер Рэй', 'Вот она, дырка! Но там такая глубина, что просто так не нырнуть.'], ['Рейнджер Рэй', 'Нужна подводная машина. На пляже живёт Механик Винтик, плыви к нему!']],
+  8: [['Механик Винтик', 'Готово! Подводная машина! В ней ты и твои шмыги можете плавать под водой.'], ['Механик Винтик', 'Плыви к дырке в море и ныряй!']],
+  9: [['Адмирал Глубь', 'Ладно, ладно! Забирай Жемчужную медаль. После кубка это твоя вторая большая награда!'], ['Адмирал Глубь', 'Но у Барона есть брат. Он живёт под землёй, и он ещё хитрее меня.'], ['Рейнджер Рэй', 'Подземный мир скоро откроется. А пока лови всех шмыгов!']],
   5: [['Капитан Мира', 'Ого! Вот Значок Моря. Теперь у тебя три значка.'], ['Рэй', 'Три значка открывают ворота. Плыви на остров в море. Там замок Барона Хапуна!']],
 };
 
 /* ---------- сохранение ---------- */
 const KEY = 'i-will-catch-you-1', OLD_KEY = ['po', 'kemon-i-will-catch-you-1'].join('');
-const fresh = () => ({ started: false, name: 'Миша', p2: 'Игрок 2', balls: 6, coins: 12, x: 12, y: 14, mine: [], cards: [], team: [], beaten: {}, houses: Array(8).fill(null), cup: false, uid: 1, tips: {}, mute: false, ch: 1, catches: 0, cages: [0, 0, 0], bigJump: false, storyV: 0, loss: {} });
+const fresh = () => ({ started: false, name: 'Миша', p2: 'Игрок 2', balls: 6, coins: 12, x: 12, y: 14, mine: [], cards: [], team: [], beaten: {}, houses: Array(8).fill(null), cup: false, uid: 1, tips: {}, mute: false, ch: 1, catches: 0, cages: [0, 0, 0], bigJump: false, storyV: 0, loss: {}, world: 0, parts: [0, 0, 0], mechMet: false, sub: false, part2: false });
 let G = fresh();
 try { const raw = localStorage.getItem(KEY) || localStorage.getItem(OLD_KEY); if (raw) G = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
 let saveFailed = false;
@@ -408,8 +422,8 @@ function drawTrainer(c, x, y, col, t) {
 
 /* ---------- карта мира ---------- */
 const MW = 96, MH = 84, TS = 44;
-const T = { GRASS: 0, TALL: 1, RIVER: 2, SEA: 3, SAND: 4, ROCK: 5, TREE: 6, PATH: 7, FOREST: 8, FLOWER: 9, DUST: 10 };
-const map = new Uint8Array(MW * MH), R1 = y => 31 + 2.5 * Math.sin(y * .2), R2 = y => 62 + 2.5 * Math.sin(y * .17 + 1), SHORE = x => 62 + 3 * Math.sin(x * .13) + 2 * Math.sin(x * .31);
+const T = { GRASS: 0, TALL: 1, RIVER: 2, SEA: 3, SAND: 4, ROCK: 5, TREE: 6, PATH: 7, FOREST: 8, FLOWER: 9, DUST: 10, DEEP: 11, CORAL: 12, WEED: 13 };
+let wi = 0, map = new Uint8Array(MW * MH); const R1 = y => 31 + 2.5 * Math.sin(y * .2), R2 = y => 62 + 2.5 * Math.sin(y * .17 + 1), SHORE = x => 62 + 3 * Math.sin(x * .13) + 2 * Math.sin(x * .31);
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 (function genMap() {
   const r = mulberry(20261031), gw = 30, grid = Array.from({ length: gw * gw }, r);
@@ -437,11 +451,20 @@ function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Ma
   for (const q of CAGES) disc(q.x, q.y, 2, T.FOREST);
   disc(72, 60, 3, T.SAND);
   disc(48, 75, 6, T.SAND); disc(82, 74, 3, T.SAND);
+  disc(VINTIK.x, VINTIK.y, 2, T.SAND); disc(PARTS[0].x, PARTS[0].y, 2, T.GRASS); disc(PARTS[1].x, PARTS[1].y, 2, T.FOREST); disc(PARTS[2].x, PARTS[2].y, 2, T.DUST);
   for (const [x, y] of [[44, 72], [52, 72], [44, 78], [53, 78]]) set(x, y, T.TREE);
 })();
 const tile = (x, y) => (x < 0 || y < 0 || x >= MW || y >= MH) ? T.TREE : map[Math.floor(x) + Math.floor(y) * MW];
-const isWater = t => t === T.RIVER || t === T.SEA, isSolid = t => t === T.TREE || t === T.ROCK, walk = t => !isWater(t) && !isSolid(t);
-const zoneOf = (x, y) => { if (y > 66 && tile(x, y) === T.SAND) return 4; const sh = SHORE(x); if (y > sh - 1 || isWater(tile(x, y))) return 3; return x < R1(y) ? 0 : x < R2(y) ? 1 : 2; };
+const MAPS = [map, (function genDeep() {
+  const m = new Uint8Array(MW * MH), r = mulberry(19770412), set = (x, y, t) => { if (x > 1 && y > 1 && x < MW - 2 && y < MH - 2) m[x + y * MW] = t; };
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) { const k = r(); m[x + y * MW] = x < 2 || y < 2 || x >= MW - 2 || y >= MH - 2 ? T.CORAL : k < .1 ? T.CORAL : k < .3 ? T.WEED : T.DEEP; }
+  const disc = (cx, cy, rad, t) => { for (let y = cy - rad; y <= cy + rad; y++) for (let x = cx - rad; x <= cx + rad; x++) if (Math.hypot(x - cx, y - cy) <= rad) set(x, y, t); };
+  const line = (a, b) => { const n = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y)); for (let i = 0; i <= n; i++) disc(Math.round(a.x + (b.x - a.x) * i / n), Math.round(a.y + (b.y - a.y) * i / n), 2, T.DEEP); };
+  line(PORTAL, SNAP); line(SNAP, ADMIRAL); disc(PORTAL.x, PORTAL.y, 4, T.DEEP); disc(SNAP.x, SNAP.y, 4, T.DEEP); disc(ADMIRAL.x, ADMIRAL.y, 5, T.DEEP);
+  return m;
+})()];
+const isWater = t => t === T.RIVER || t === T.SEA, isSolid = t => t === T.TREE || t === T.ROCK || t === T.CORAL, walk = t => !isWater(t) && !isSolid(t);
+const zoneOf = (x, y) => { if (wi === 1) return 5; if (y > 66 && tile(x, y) === T.SAND) return 4; const sh = SHORE(x); if (y > sh - 1 || isWater(tile(x, y))) return 3; return x < R1(y) ? 0 : x < R2(y) ? 1 : 2; };
 
 /* заготовки тайлов рисуются один раз */
 function mkTile(fn) { const c = h('canvas', { width: TS * 2, height: TS * 2 }), x = c.getContext('2d'); x.scale(2, 2); fn(x); return c; }
@@ -459,6 +482,12 @@ for (let v = 0; v < 4; v++) {
   TILES[T.FLOWER + '_' + v] = mkTile(c => { c.drawImage(TILES[T.GRASS + '_' + v], 0, 0, TS, TS); const q = mulberry(71 + v);
     for (let i = 0; i < 3; i++) { const x = 8 + q() * 28, y = 8 + q() * 28, col = ['#ff6fa8', '#fff', '#ffcf33'][i % 3]; c.fillStyle = col; for (let a = 0; a < 5; a++) { c.beginPath(); c.arc(x + Math.cos(a * 1.26) * 4, y + Math.sin(a * 1.26) * 4, 2.8, 0, 7); c.fill(); } c.fillStyle = '#e8891c'; c.beginPath(); c.arc(x, y, 2.2, 0, 7); c.fill(); } });
 }
+for (let v = 0; v < 4; v++) {
+  TILES[T.DEEP + '_' + v] = base('#14568f', ['#125085', '#1a629e'], 7, 2.4, 81 + v);
+  TILES[T.CORAL + '_' + v] = TILES[T.DEEP + '_' + v];
+  TILES[T.WEED + '_' + v] = mkTile(c => { c.drawImage(TILES[T.DEEP + '_' + v], 0, 0, TS, TS); const q = mulberry(91 + v); c.lineCap = 'round'; c.lineWidth = 3.5; for (let i = 0; i < 5; i++) { const x = 6 + q() * 32, y = 40; c.strokeStyle = q() > .5 ? '#2fae7a' : '#22c79a'; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x - 7, y - 12, x + 2, y - 20); c.quadraticCurveTo(x + 8, y - 26, x, y - 34); c.stroke(); } });
+}
+const SPR_CORAL = mkTile2(60, 60, c => { c.lineCap = 'round'; c.lineJoin = 'round'; for (const [w, col] of [[11, OUT], [6, '#ff6f91']]) { c.lineWidth = w; c.strokeStyle = col; c.beginPath(); c.moveTo(30, 56); c.lineTo(30, 18); c.moveTo(30, 40); c.lineTo(12, 22); c.moveTo(30, 34); c.lineTo(48, 14); c.moveTo(12, 22); c.lineTo(10, 10); c.moveTo(48, 14); c.lineTo(54, 26); c.stroke(); } });
 const WATER = [T.RIVER, T.SEA].map(t => [0, 1, 2, 3].map(f => mkTile(c => {
   c.fillStyle = t === T.RIVER ? '#3fbcf5' : '#1f8ee3'; c.fillRect(0, 0, TS, TS); c.strokeStyle = 'rgba(255,255,255,.4)'; c.lineWidth = 2.5; c.lineCap = 'round';
   for (const [x, y] of [[8, 12], [26, 32]]) { const o = Math.sin(f * Math.PI / 2) * 4; c.beginPath(); c.moveTo(x + o, y); c.quadraticCurveTo(x + 6 + o, y - 4, x + 12 + o, y); c.stroke(); }
@@ -494,7 +523,7 @@ function cutOut(im) {
   x.putImageData(d, 0, 0); return c;
 }
 SPECIES.forEach((sp, i) => {
-  sp.i = i; const im = new Image();
+  sp.i = i; if (i >= 18) return; const im = new Image();
   im.onload = () => { try { const c = cutOut(im), q = h('canvas', { width: c.width, height: c.height }), x = q.getContext('2d'); x.drawImage(c, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = OUT; x.fillRect(0, 0, q.width, q.height); PORT[i] = c; PSIL[i] = q; } catch (e) { PORT[i] = im; } };
   im.src = 'art/sh/' + i + '.jpg';
 });
@@ -529,10 +558,10 @@ $('panelClose').onclick = () => { sfx.ui(); closePanel(); };
 function syncUI() {
   const world = scene === WORLD, b = $('sBalls');
   $('hud').hidden = !world;
-  const q = quest(), panelOpen = !$('veil').hidden, badges = ['sonya', 'timur', 'mira'].filter(k => G.beaten[k]).length;
-  $('goal').hidden = !world || panelOpen; $('goal').textContent = '🎯 ' + q.t; $('sBadge').hidden = !badges; $('sBadge').textContent = '🏅 ' + badges + '/3';
+  const q = quest(), panelOpen = !$('veil').hidden, badges = ['sonya', 'timur', 'mira', 'admiral'].filter(k => G.beaten[k]).length;
+  $('goal').hidden = !world || panelOpen; $('goal').textContent = '🎯 ' + q.t; $('sBadge').hidden = !badges; $('sBadge').textContent = '🏅 ' + badges;
   $('mTown').classList.toggle('call', world && q.btn === 'mTown'); $('mSport').classList.toggle('call', world && q.btn === 'mSport');
-  const jb = $('btnJump'), fb = $('btnFind'); jb.classList.toggle('locked', G.ch < 2); fb.classList.toggle('locked', !G.beaten.sonya); jb.textContent = (G.ch < 2 ? '🔒 ' : '') + 'Прыжок'; fb.textContent = (G.beaten.sonya ? '' : '🔒 ') + 'Искать'; $('pads').hidden = !world || !$('veil').hidden;
+  const jb = $('btnJump'), fb = $('btnFind'); jb.hidden = wi === 1; jb.classList.toggle('locked', G.ch < 2); fb.classList.toggle('locked', !G.beaten.sonya); jb.textContent = (G.ch < 2 ? '🔒 ' : '') + 'Прыжок'; fb.textContent = (G.beaten.sonya ? '' : '🔒 ') + 'Искать'; $('pads').hidden = !world || !$('veil').hidden;
   b.textContent = G.balls; $('sCoins').textContent = G.coins; $('sDex').textContent = caughtSet().size + '/' + SPECIES.length; $('sCup').hidden = !G.cup; $('mSound').textContent = G.mute ? '🔇' : '🔊';
 }
 const busy = () => !$('talk').hidden || !$('veil').hidden;
@@ -540,7 +569,7 @@ function setActs(list) { const a = $('acts'); a.replaceChildren(...list); a.hidd
 
 /* ---------- мир ---------- */
 const hero = { x: G.x, y: G.y, dir: 1, moving: false, t: 0, jump: 0, jx: 0, jy: 0, vx: 0, vy: 0, ox: 0, oy: 0, z: 0, riding: false, radar: 0, target: null };
-let goalT = 0, wilds = [], pickups = [], worldT = 0, saveT = 0, hintT = 0, talkCool = 0, bannerT = 0;
+let holeCool = 0, goalT = 0, wilds = [], pickups = [], worldT = 0, saveT = 0, hintT = 0, talkCool = 0, bannerT = 0;
 const keys = {}, joy = { on: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
 function waterRide() { return allOwned().find(i => itemElem(i) === 'water'); }
 function spawnWild(z) {
@@ -548,20 +577,34 @@ function spawnWild(z) {
   const pool = SPECIES.map((s, i) => i).filter(i => SPECIES[i].z.includes(z));
   for (let tries = 0; tries < 120; tries++) {
     const x = 3 + q() * (MW - 6), y = 3 + q() * (MH - 6); if (zoneOf(x, y) !== z) continue;
-    const t = tile(x, y); const fresh = pool.filter(i => !have.has(i)); const sp = fresh.length && q() < .6 ? pick(fresh) : pick(pool), water = SPECIES[sp].e === 'water';
+    const t = tile(x, y); const fresh = pool.filter(i => !have.has(i)); const sp = fresh.length && q() < .6 ? pick(fresh) : pick(pool), water = SPECIES[sp].e === 'water' && wi === 0;
     if (water ? !(isWater(t) || t === T.SAND) : !walk(t)) continue;
     if (Math.hypot(x - hero.x, y - hero.y) < 9) continue;
     if (SPECIES[sp].r === 3 && q() < .5) continue;
     wilds.push({ sp, x, y, vx: 0, vy: 0, t: rnd(0, 9), go: 0, flee: 0, tired: 0 }); return;
   }
 }
-function spawnAll() { wilds = []; for (const [z, n] of [[0, 6], [1, 6], [2, 6], [3, 6], [4, 2]]) for (let i = 0; i < n; i++) spawnWild(z); }
+function spawnAll() { wilds = []; for (const [z, n] of wi === 1 ? [[5, 16]] : [[0, 6], [1, 6], [2, 6], [3, 6], [4, 2]]) for (let i = 0; i < n; i++) spawnWild(z); }
 function makePickups() {
-  const q = mulberry(77); pickups = [];
-  for (let i = 0; i < 44; i++) { for (let k = 0; k < 40; k++) { const x = 3 + q() * (MW - 6), y = 3 + q() * (MH - 6); if (walk(tile(x, y))) { pickups.push({ x, y, k: i % 4 === 0 ? 'chest' : 'ball', gone: 0 }); break; } } }
-  pickups.push({ x: 82, y: 74, k: 'chest', gone: 0 });
+  const q = mulberry(77 + wi); pickups = [];
+  for (let i = 0; i < (wi ? 20 : 44); i++) { for (let k = 0; k < 40; k++) { const x = 3 + q() * (MW - 6), y = 3 + q() * (MH - 6); if (walk(tile(x, y))) { pickups.push({ x, y, k: i % 4 === 0 ? 'chest' : 'ball', gone: 0 }); break; } } }
+  if (!wi) pickups.push({ x: 82, y: 74, k: 'chest', gone: 0 });
 }
-const wildOK = (w, x, y) => { const t = tile(x, y); return SPECIES[w.sp].e === 'water' ? (isWater(t) || t === T.SAND) : walk(t); };
+const wildOK = (w, x, y) => { const t = tile(x, y); return SPECIES[w.sp].e === 'water' && wi === 0 ? (isWater(t) || t === T.SAND) : walk(t); };
+function setWorld(i, x, y) {
+  wi = i; map = MAPS[i]; G.world = i; hero.x = x; hero.y = y; hero.jump = 0; hero.z = 0; hero.riding = i === 0 && isWater(tile(x, y + .15)); hero.target = null; hero.radar = 0;
+  G.x = x; G.y = y; talkCool = 2; holeCool = 4; spawnAll(); makePickups(); save(); syncUI();
+}
+function drawSub(c, x, y, dir, t) {
+  c.save(); c.translate(x, y + Math.sin(t * 3) * 3); c.scale(dir < 0 ? -1 : 1, 1); c.lineWidth = 3.5; c.strokeStyle = OUT; c.lineJoin = 'round';
+  c.fillStyle = '#ffcf33'; c.beginPath(); ell(c, 0, 0, 40, 25); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(-38, 0); c.lineTo(-56, -14); c.lineTo(-56, 14); c.closePath(); c.fillStyle = '#ef3e42'; c.fill(); c.stroke();
+  c.fillStyle = '#ef3e42'; c.beginPath(); c.roundRect(-10, -36, 20, 14, 4); c.fill(); c.stroke();
+  c.fillStyle = '#bff0ff'; c.beginPath(); c.arc(12, -2, 15, 0, 7); c.fill(); c.stroke();
+  drawHero(c, 12, 16, 1, 0, false, .62);
+  c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 2; for (let i = 0; i < 3; i++) { const q = (t * 2 + i * .33) % 1; c.beginPath(); c.arc(-64 - q * 22, Math.sin(i * 2) * 8 - q * 14, 2 + q * 3, 0, 7); c.stroke(); }
+  c.restore();
+}
 function tryStep(nx, ny) {
   const t = tile(nx, ny + .15);
   if (isWater(t)) { if (G.ch >= 4 && waterRide()) { if (!hero.riding) { hero.riding = true; sfx.splash(); toast('Плывём на ' + itemName(waterRide()) + '!'); } return true; }
@@ -571,7 +614,7 @@ function tryStep(nx, ny) {
   return true;
 }
 function doJump() {
-  if (scene !== WORLD || busy() || hero.jump > 0 || hero.riding) return;
+  if (scene !== WORLD || busy() || hero.jump > 0 || hero.riding || wi === 1) return;
   if (G.ch < 2) { toast('Прыжок откроется, когда победишь Шныря у реки'); return; }
   let dx = hero.vx, dy = hero.vy, l = Math.hypot(dx, dy); if (l < .01) { dx = hero.dir; dy = 0; l = 1; }
   hero.jump = .52; hero.jx = dx / l; hero.jy = dy / l; hero.ox = hero.x; hero.oy = hero.y; sfx.jump();
@@ -618,7 +661,7 @@ const WORLD = {
       else { w.go -= dt; if (w.go <= 0) { w.go = rnd(1, 3); const a = rnd(0, 6.3); w.vx = Math.cos(a); w.vy = Math.sin(a); if (Math.random() < .4) w.vx = w.vy = 0; } }
       const nx = w.x + w.vx * s * dt, ny = w.y + w.vy * s * dt;
       if (wildOK(w, nx, w.y)) w.x = nx; else w.vx *= -1; if (wildOK(w, w.x, ny)) w.y = ny; else w.vy *= -1;
-      if (d < (sp.e === 'water' ? 1.7 : 1) && hero.jump <= 0) { wilds = wilds.filter(q => q !== w); startCatch(w); return; }
+      if (d < (sp.e === 'water' && wi === 0 ? 1.7 : 1.2) && hero.jump <= 0) { wilds = wilds.filter(q => q !== w); startCatch(w); return; }
     }
     goalT += dt; if (goalT > .5) { goalT = 0; syncUI(); }
     if (hero.target && !wilds.includes(hero.target)) { hero.target = null; hero.radar = 0; }
@@ -627,8 +670,17 @@ const WORLD = {
       if (Math.hypot(p.x - hero.x, p.y - hero.y) < .9) { p.gone = 120; sfx.pick();
         if (p.k === 'ball') { G.balls++; toast('+1 звездолов'); } else { G.balls += 3; G.coins += 5; toast('Сундук! +3 звездолова и +5 монет'); } save(); syncUI(); }
     }
-    if (talkCool <= 0) for (const q of NPCS) if (Math.hypot(q.x - hero.x, q.y - hero.y) < 1.7) { meet(q); break; }
-    if (wilds.length < 22 && Math.random() < dt * .6) spawnWild(pick([0, 1, 2, 3, 3, 4]));
+    if (talkCool <= 0) for (const q of NPCS) if ((q.w || 0) === wi && Math.hypot(q.x - hero.x, q.y - hero.y) < 1.7) { meet(q); break; }
+    if (wilds.length < (wi ? 16 : 22) && Math.random() < dt * .6) spawnWild(wi ? 5 : pick([0, 1, 2, 3, 3, 4]));
+    holeCool -= dt;
+    if (wi === 1 && holeCool <= 0 && Math.hypot(PORTAL.x - hero.x, PORTAL.y - hero.y) < 1.5) { setWorld(0, HOLE.x + 3, HOLE.y); toast('Всплыли!'); return; }
+    if (wi === 0 && holeCool <= 0 && hero.riding && Math.hypot(HOLE.x - hero.x, HOLE.y - hero.y) < 1.8) {
+      holeCool = 5;
+      if (G.ch === 6) { startChapter(7); return; }
+      if (G.sub) { setWorld(1, PORTAL.x + 3, PORTAL.y); sfx.splash(); bannerT = 2.5; return; }
+      toast('Без подводной машины не нырнуть');
+    }
+    if (wi === 0 && G.mechMet && !G.sub) PARTS.forEach((q, i) => { if (!G.parts[i] && Math.hypot(q.x - hero.x, q.y - hero.y) < 1.3) { G.parts[i] = 1; save(); sfx.caught(); toast('Деталь найдена: ' + q.n + '!'); syncUI(); } });
   },
   draw(c, dt) {
     const z = ZOOM, vw = W / z, vh = H / z, wx = hero.x * TS, wy = hero.y * TS;
@@ -643,15 +695,20 @@ const WORLD = {
         if (n(x, y - 1)) c.fillRect(px, py, TS, 4); if (n(x, y + 1)) c.fillRect(px, py + TS - 4, TS, 4); if (n(x - 1, y)) c.fillRect(px, py, 4, TS); if (n(x + 1, y)) c.fillRect(px + TS - 4, py, 4, TS);
       } else if (t === T.TREE) { c.drawImage(TILES[(x > 62 ? T.DUST : x > 31 ? T.FOREST : y > 60 ? T.SAND : T.GRASS) + '_' + v], px, py, TS + .5, TS + .5); list.push({ y: py + TS, k: 0, px, py }); }
       else if (t === T.ROCK) { c.drawImage(TILES[T.DUST + '_' + v], px, py, TS + .5, TS + .5); list.push({ y: py + TS, k: 1, px, py }); }
+      else if (t === T.CORAL) { c.drawImage(TILES[T.DEEP + '_' + v], px, py, TS + .5, TS + .5); list.push({ y: py + TS, k: 13, px, py }); }
       else c.drawImage(TILES[t + '_' + v], px, py, TS + .5, TS + .5);
     }
     /* дом Миши у старта */
-    list.push({ y: 11 * TS, k: 2 });
+    if (wi === 0) list.push({ y: 11 * TS, k: 2 });
     for (const p of pickups) if (p.gone <= 0) list.push({ y: p.y * TS, k: 3, p });
     for (const w of wilds) list.push({ y: w.y * TS, k: 4, w });
-    for (const q of NPCS) list.push({ y: q.y * TS, k: 5, q });
-    CAGES.forEach((q, i) => list.push({ y: q.y * TS, k: 7, q, i }));
-    list.push({ y: 72.6 * TS, k: 8 }, { y: 73.6 * TS, k: 9 });
+    for (const q of NPCS) if ((q.w || 0) === wi) list.push({ y: q.y * TS, k: 5, q });
+    if (wi === 0) {
+      CAGES.forEach((q, i) => list.push({ y: q.y * TS, k: 7, q, i }));
+      list.push({ y: 72.6 * TS, k: 8 }, { y: 73.6 * TS, k: 9 });
+      if (G.ch >= 6) list.push({ y: HOLE.y * TS - 40, k: 10 });
+      if (G.mechMet && !G.sub) PARTS.forEach((q, i) => { if (!G.parts[i]) list.push({ y: q.y * TS, k: 11, q }); });
+    } else list.push({ y: PORTAL.y * TS - 40, k: 12 });
     list.push({ y: hero.y * TS + 1, k: 6 });
     list.sort((a, b) => a.y - b.y);
     for (const e of list) {
@@ -663,11 +720,15 @@ const WORLD = {
       else if (e.k === 4) { const w = e.w, sp = SPECIES[w.sp], px = w.x * TS, py = w.y * TS, inW = isWater(tile(w.x, w.y)); c.fillStyle = inW ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.18)'; c.beginPath(); ell(c, px, py + 15, 19, 6); c.fill(); drawCreature(c, sp, px, py - 8 + (w.tired > 0 ? 0 : Math.abs(Math.sin(w.t * 7)) * -5), 21 + sp.r * 2, w.t, w.vx < 0); if (w.tired > 0) hugeText(c, 'уф!', px, py - 42, 15, '#fff'); else if (!caughtSet().has(w.sp)) hugeText(c, 'NEW', px, py - 42, 12, '#ffcf33'); }
       else if (e.k === 5) { const q = e.q, px = q.x * TS, py = q.y * TS; c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); ell(c, px, py + 22, 16, 5); c.fill(); if (q.villain) drawVillain(c, px, py, worldT); else if (q === RAY) drawRanger(c, px, py, worldT); else drawTrainer(c, px, py, q.col, worldT); hugeText(c, q.n, px, py - (q.villain ? 64 : 46), 14, '#fff'); if (q !== RAY && !G.beaten[q.id]) hugeText(c, '!', px, py - (q.villain ? 80 : 62) + Math.sin(worldT * 5) * 3, 24, '#ffcf33'); }
       else if (e.k === 7) { const px = e.q.x * TS, py = e.q.y * TS; drawCreature(c, SPECIES[e.q.sp], px, py - 6, 20, worldT); if (!G.cages[e.i]) { c.strokeStyle = OUT; c.lineWidth = 5; for (let i = -2; i <= 2; i++) { c.beginPath(); c.moveTo(px + i * 11, py - 32); c.lineTo(px + i * 11, py + 18); c.stroke(); } c.lineWidth = 6; c.beginPath(); c.roundRect(px - 28, py - 34, 56, 54, 5); c.stroke(); } }
+      else if (e.k === 10 || e.k === 12) { const q = e.k === 10 ? HOLE : PORTAL, px = q.x * TS, py = q.y * TS; for (let i = 0; i < 4; i++) { c.strokeStyle = i % 2 ? '#bff0ff' : '#0b3f7a'; c.lineWidth = 7; c.beginPath(); c.arc(px, py, 58 - i * 14, worldT * 2 + i, worldT * 2 + i + 4.6); c.stroke(); } c.fillStyle = '#071f45'; c.beginPath(); c.arc(px, py, 12, 0, 7); c.fill(); }
+      else if (e.k === 11) { const px = e.q.x * TS, py = e.q.y * TS - 6 + Math.sin(worldT * 4) * 3; c.fillStyle = '#c6c2d4'; c.strokeStyle = OUT; c.lineWidth = 3; c.beginPath(); for (let i = 0; i < 16; i++) { const k = i % 2 ? 11 : 17, a = i * Math.PI / 8; c.lineTo(px + Math.cos(a) * k, py + Math.sin(a) * k); } c.closePath(); c.fill(); c.stroke(); c.fillStyle = '#ffcf33'; c.beginPath(); c.arc(px, py, 5, 0, 7); c.fill(); c.stroke(); }
+      else if (e.k === 13) c.drawImage(SPR_CORAL, e.px - 8, e.py - 16, 60, 60);
       else if (e.k === 8) drawHouse(c, 48 * TS, 71.6 * TS, 'castle', 2.3);
       else if (e.k === 9) drawShip(c, 82 * TS, 72.6 * TS, worldT);
       else if (e.k === 6) {
         const hx = wx, hy = wy; c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); ell(c, hx, hy + 22, 15 - hero.z * .08, 5); c.fill();
-        if (hero.riding) { const r = waterRide(), wob = Math.sin(worldT * 5) * 3; c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 3; c.beginPath(); ell(c, hx, hy + 18, 34 + wob, 12); c.stroke();
+        if (wi === 1) drawSub(c, hx, hy - 8, hero.dir, worldT);
+        else if (hero.riding) { const r = waterRide(), wob = Math.sin(worldT * 5) * 3; c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 3; c.beginPath(); ell(c, hx, hy + 18, 34 + wob, 12); c.stroke();
           if (r && r.img === undefined) drawCreature(c, SPECIES[r.sp], hx, hy + 8 + wob, 26, worldT, hero.dir < 0); else if (r) drawCard(c, cardImg(r.img), hx, hy + 10, 40, Math.PI / 2);
           drawHero(c, hx, hy - 20 + wob, hero.dir, 0, false); }
         else drawHero(c, hx, hy - hero.z, hero.dir, hero.t, hero.moving);
@@ -676,11 +737,12 @@ const WORLD = {
     if (hero.radar > 0 && hero.target) { const t = hero.target, a = Math.atan2(t.y - hero.y, t.x - hero.x), px = wx + Math.cos(a) * 62, py = wy - 16 + Math.sin(a) * 62;
       c.save(); c.translate(px, py); c.rotate(a); c.fillStyle = '#ffcf33'; c.strokeStyle = OUT; c.lineWidth = 3; c.beginPath(); c.moveTo(20, 0); c.lineTo(-10, -13); c.lineTo(-4, 0); c.lineTo(-10, 13); c.closePath(); c.fill(); c.stroke(); c.restore();
       c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 3; c.beginPath(); c.arc(wx, wy, (4 - hero.radar) % 1 * 130, 0, 7); c.stroke(); }
+    if (wi === 1) { c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.fillStyle = 'rgba(255,255,255,.5)'; for (let i = 0; i < 26; i++) { const yy = H - ((worldT * (24 + i * 2) + i * 137) % (H + 20)), xx = (i * 89) % W + Math.sin(worldT + i) * 8; c.beginPath(); c.arc(xx, yy, 2 + i % 4, 0, 7); c.fill(); } c.restore(); }
     const qt = questTarget(quest());
     if (qt && Math.hypot(qt.x - hero.x, qt.y - hero.y) > 5 && hero.radar <= 0) { const a = Math.atan2(qt.y - hero.y, qt.x - hero.x), px = wx + Math.cos(a) * 66, py = wy - 16 + Math.sin(a) * 66 + Math.sin(worldT * 5) * 3;
       c.save(); c.translate(px, py); c.rotate(a); c.fillStyle = '#ef3e42'; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.moveTo(20, 0); c.lineTo(-10, -13); c.lineTo(-4, 0); c.lineTo(-10, 13); c.closePath(); c.fill(); c.stroke(); c.restore(); }
     c.restore();
-    if (bannerT > 0) { c.fillStyle = 'rgba(29,36,64,.72)'; c.fillRect(0, H * .3, W, 92); hugeText(c, 'Глава ' + G.ch, W / 2, H * .3 + 32, 22, '#ffcf33'); hugeText(c, CHAPTERS[G.ch], W / 2, H * .3 + 74, Math.min(38, W * .09), '#fff'); }
+    if (bannerT > 0) { c.fillStyle = 'rgba(29,36,64,.72)'; c.fillRect(0, H * .3, W, 92); hugeText(c, G.ch > 5 ? 'Часть 2' : 'Глава ' + G.ch, W / 2, H * .3 + 32, 22, '#ffcf33'); hugeText(c, CHAPTERS[G.ch], W / 2, H * .3 + 74, Math.min(38, W * .09), '#fff'); }
     if (joy.on) { c.fillStyle = 'rgba(255,255,255,.22)'; c.strokeStyle = 'rgba(29,36,64,.5)'; c.lineWidth = 3; c.beginPath(); c.arc(joy.ox, joy.oy, 54, 0, 7); c.fill(); c.stroke(); c.fillStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(joy.ox + joy.x * 46, joy.oy + joy.y * 46, 24, 0, 7); c.fill(); c.stroke(); }
     drawFx(c, dt);
   },
@@ -703,10 +765,25 @@ function quest() {
       if (!waterRide()) return { t: 'Поймай водяного шмыга', to: near(w => SPECIES[w.sp].e === 'water') };
       return { t: 'Плыви на корабль Капитана Миры', to: TRAINERS[3] };
     case 5: return { t: 'Плыви на остров и победи Барона Хапуна', to: BARON };
+    case 6: return { t: 'Плыви к дырке в море', to: HOLE };
+    case 7: {
+      if (!G.mechMet) return { t: 'Найди Механика Винтика на пляже', to: VINTIK };
+      const miss = PARTS.filter((q, i) => !G.parts[i]).sort((a, b) => Math.hypot(a.x - hero.x, a.y - hero.y) - Math.hypot(b.x - hero.x, b.y - hero.y));
+      if (miss.length) return { t: 'Собери детали: ' + (3 - miss.length) + ' из 3', to: miss[0] };
+      return { t: 'Отнеси детали Винтику', to: VINTIK };
+    }
+    case 8:
+      if (wi === 0) return { t: 'Ныряй в дырку на подводной машине', to: HOLE };
+      if (!G.beaten.snap) return { t: 'Победи Краба Щёлка', to: SNAP };
+      return { t: 'Победи Адмирала Глубь', to: ADMIRAL };
     default: { const n = caughtSet().size; return n < SPECIES.length ? { t: 'Собери всех шмыгов: ' + n + ' из ' + SPECIES.length, to: near(w => !caughtSet().has(w.sp)) } : { t: 'Ты собрал всех! Ты лучший ловец!' }; }
   }
 }
-const questTarget = q => q && q.to || null;
+const questTarget = q => { const to = q && q.to; return to && (to.w || 0) === wi ? to : null; };
+function partTwo() {
+  G.part2 = true; save(); bannerT = 3; syncUI();
+  say([['Барон Хапун', 'Постой, ' + G.name + '! У меня есть старый друг под водой, Адмирал Глубь. Он совсем не добрый.'], ['Барон Хапун', 'Он утащил Жемчужную медаль и хочет забрать всех морских шмыгов.'], ['Рейнджер Рэй', 'В море есть большая дырка, она ведёт к нему. Плыви туда!']], syncUI);
+}
 function startChapter(n) {
   G.ch = n; save(); sfx.win(); syncUI();
   if (n === 5) { cutscene(c => { if (!drawArt(c, 'castle', '#f5efe3')) stage(c, 3); }, CH_SAY[5], () => { go(WORLD); bannerT = 3; syncUI(); }); return; }
@@ -721,17 +798,25 @@ function openCage(i) {
 }
 function meet(q) {
   talkCool = 3;
+  if (q === VINTIK) {
+    if (G.ch < 7) { talkCool = 10; say([['Механик Винтик', 'Я чиню всё на свете! Приходи, если что-то понадобится.']]); return; }
+    if (G.sub) { talkCool = 15; return; }
+    if (!G.mechMet) { G.mechMet = true; save(); syncUI(); talkCool = 8; say([['Механик Винтик', 'Подводная машина? Сделаю! Но нужны три детали: винт, стекло и мотор.'], ['Механик Винтик', 'Они лежат на лугу, в лесу и в горах. Красная стрелка покажет, куда идти.']]); return; }
+    if (G.parts.every(Boolean)) { G.sub = true; save(); startChapter(8); return; }
+    talkCool = 8; say([['Механик Винтик', 'Пока не хватает деталей. Ищи дальше!']]); return;
+  }
   if (q === RAY) {
-    if (G.ch >= 6) { G.balls += 3; save(); syncUI(); talkCool = 40; say([['Рэй', 'Привет, друг! Держи ещё 3 звездолова. Лови всех!']]); return; }
+    if (G.ch >= 6) { G.balls += 3; save(); syncUI(); talkCool = 40; say([['Рэй', 'Привет, друг! Держи ещё 3 звездолова. Твоя цель: ' + quest().t + '.']]); return; }
     talkCool = 10; say([['Рэй', G.name + ', сейчас твоя цель: ' + quest().t + '.']]); return;
   }
   if (q === BARON) {
-    if (G.ch >= 6) { talkCool = 40; G.coins += 5; save(); syncUI(); say([['Барон Хапун', 'Привет, друг! Держи 5 монет. Заходи ещё, мне теперь не скучно.']]); return; }
+    if (G.ch >= 6) { talkCool = 40; G.coins += 5; save(); syncUI(); say([['Барон Хапун', 'Привет, друг! Держи 5 монет. Берегись моих старых знакомых!']]); return; }
     if (G.ch < 5) { talkCool = 8; say([['Барон Хапун', 'Ха-ха! Ворота заперты. Без трёх значков ты меня не победишь!']]); return; }
     say([['Барон Хапун', 'Ты дошёл до замка? Шмыги и кубок мои! Сейчас увидишь мою команду!']], () => startBattle(q)); return;
   }
   if (G.beaten[q.id]) { talkCool = 12; return; }
   if (q.id === 'sonya' && G.cages.some(x => !x)) { talkCool = 8; say([['Соня', 'Сначала открой все клетки, а потом приходи.']]); return; }
+  if (q.id === 'admiral' && !G.beaten.snap) { talkCool = 8; say([['Адмирал Глубь', 'Сначала победи Краба Щёлка!']]); return; }
   if (q.id === 'helper' && (G.catches < 3 || !G.houses.some(x => x && x.who))) { talkCool = 8; say([['Шнырь', 'Ха! Сначала ' + quest().t.toLowerCase() + '. Потом поговорим!']]); return; }
   say([[q.n, q.hi]], () => startBattle(q));
 }
@@ -742,13 +827,13 @@ function startBattle(q) {
     if (win) {
       G.beaten[q.id] = true; G.coins += 15; mine.forEach(i => gainXP(i, 12)); save();
       if (q === BARON) { G.cup = true; G.ch = 6; G.coins += 50; G.balls += 10; save(); go(TROPHY); return; }
-      go(WORLD); startChapter(NEXT_CH[q.id]);
+      go(WORLD); if (NEXT_CH[q.id]) startChapter(NEXT_CH[q.id]); else say([[q.n, 'Щёлк! Ты сильный. Адмирал дальше, в глубине.']], syncUI);
     } else { G.loss[q.id] = lost + 1; mine.forEach(i => gainXP(i, 8)); talkCool = 6; hero.y -= 2.5; go(WORLD); say([[q.n, 'Почти! Сходи в спорт, потренируй шмыгов и возвращайся.']]); }
   } });
 }
 
 /* ---------- ловля ---------- */
-const BG = [['#a9e9ff', '#83dc58'], ['#7fd6b0', '#46a862'], ['#ffd7a0', '#dfa86c'], ['#8fdcff', '#2fa8f4'], ['#ffc8ec', '#f6dc8e']];
+const BG = [['#a9e9ff', '#83dc58'], ['#7fd6b0', '#46a862'], ['#ffd7a0', '#dfa86c'], ['#8fdcff', '#2fa8f4'], ['#ffc8ec', '#f6dc8e'], ['#1f6fb8', '#174a86']];
 function stage(c, z) { const g = c.createLinearGradient(0, 0, 0, H), b = BG[z] || BG[0]; g.addColorStop(0, b[0]); g.addColorStop(.62, b[0]); g.addColorStop(.621, b[1]); g.addColorStop(1, b[1]); c.fillStyle = g; c.fillRect(0, 0, W, H); }
 function startCatch(w) {
   const sp = SPECIES[w.sp], z = zoneOf(w.x, w.y);
@@ -793,7 +878,7 @@ function startCatch(w) {
   function broke() { tries++; mode = 'broke'; hideC = false; ball.t = 0; msg = 'Вырвался!'; sfx.fail(); burst(ball.ex, ball.ey, 14, ['#ef3e42', '#fff']); }
   function done() {
     mode = 'caught'; wob = 0; sfx.caught(); burst(ball.ex, ball.ey, 70, ['#ffcf33', '#ef3e42', '#2fa8f4', '#58c84a', '#fff']);
-    const isNew = !caughtSet().has(w.sp); G.catches++; addCreature(w.sp, 1 + (sp.r - 1) * 2 + [0, 1, 2, 2, 3][z]); G.coins += isNew ? 6 : 2; save(); msg = 'Поймал!';
+    const isNew = !caughtSet().has(w.sp); G.catches++; addCreature(w.sp, 1 + (sp.r - 1) * 2 + [0, 1, 2, 2, 3, 4][z]); G.coins += isNew ? 6 : 2; save(); msg = 'Поймал!';
     setTimeout(() => { go(WORLD); say([[G.name, (isNew ? 'Ура! Новый шмыг: ' : 'Ещё один: ') + sp.n + '! Теперь он твой.' + (isNew && sp.e === 'water' && G.ch >= 4 && allOwned().filter(i => itemElem(i) === 'water').length === 1 ? ' На нём можно плавать: просто иди в воду!' : '')]]); }, 1300);
   }
 }
@@ -870,7 +955,7 @@ function battle(o) {
 /* финал: кубок от Рэйа */
 const TROPHY = {
   t: 0, enter() { this.t = 0; sfx.win(); burst(W / 2, H / 3, 120, ['#ffcf33', '#ef3e42', '#2fa8f4', '#58c84a', '#fff']); setActs([]);
-    say([['Барон Хапун', 'Ой-ой… Ты победил. Забирай всех шмыгов и кубок.'], ['Барон Хапун', 'Я забирал шмыгов, потому что у меня никогда не было друзей.'], [G.name, 'Давай дружить! Только больше никого не забирай.'], ['Барон Хапун', 'Правда? Спасибо! Я всё починю.'], ['Рэй', 'Ты спас всех, ' + G.name + '! Вот твой приз: Золотой кубок, 50 монет и 10 звездоловов.'], ['Рэй', 'Теперь мы все друзья!']], () => { go(WORLD); bannerT = 3; syncUI(); }); },
+    say([['Барон Хапун', 'Ой-ой… Ты победил. Забирай всех шмыгов и кубок.'], ['Барон Хапун', 'Я забирал шмыгов, потому что у меня никогда не было друзей.'], [G.name, 'Давай дружить! Только больше никого не забирай.'], ['Барон Хапун', 'Правда? Спасибо! Я всё починю.'], ['Рэй', 'Ты спас всех, ' + G.name + '! Вот твой приз: Золотой кубок, 50 монет и 10 звездоловов.'], ['Рэй', 'Теперь мы все друзья!']], () => { go(WORLD); partTwo(); }); },
   update(dt) { this.t += dt; if (Math.random() < dt * 3) burst(rnd(0, W), rnd(0, H / 2), 16, ['#ffcf33', '#fff', '#ef3e42']); },
   draw(c, dt) { if (drawArt(c, 'finale', '#ffffff', 64)) { hugeText(c, 'Чемпион ' + G.name + '!', W / 2, 46, Math.min(32, W * .08), '#ffcf33'); drawFx(c, dt); return; } stage(c, 4); const x = W / 2, y = H * .34, k = Math.min(W, H) / 480; c.save(); c.translate(x, y + Math.sin(this.t * 2) * 6); c.scale(k, k); c.lineWidth = 6; c.strokeStyle = OUT; c.fillStyle = '#ffcf33'; c.beginPath(); c.moveTo(-60, -80); c.lineTo(60, -80); c.quadraticCurveTo(58, 10, 12, 26); c.lineTo(12, 56); c.lineTo(40, 76); c.lineTo(-40, 76); c.lineTo(-12, 56); c.lineTo(-12, 26); c.quadraticCurveTo(-58, 10, -60, -80); c.closePath(); c.fill(); c.stroke(); for (const s of [-1, 1]) { c.beginPath(); c.arc(s * 66, -48, 24, s > 0 ? -1.6 : 1.6 - Math.PI * 2, s > 0 ? 1.6 : 4.7); c.stroke(); } c.restore(); const yy = H * .6; drawRanger(c, x - W * .3, yy, this.t); drawHero(c, x, yy, 1, this.t, false); drawVillain(c, x + W * .3, yy, this.t); hugeText(c, 'Чемпион ' + G.name + '!', W / 2, 54, Math.min(32, W * .08), '#ffcf33'); drawFx(c, dt); },
 };
@@ -984,10 +1069,10 @@ function detail(it) {
 }
 function mapPanel() {
   const s = Math.min(6, Math.floor((Math.min(innerWidth - 60, 700)) / MW) || 3), c = h('canvas', { width: MW * s, height: MH * s, style: 'max-width:100%;display:block;margin:0 auto;border:3px solid #1d2440;border-radius:12px' }), x = c.getContext('2d');
-  const col = { [T.GRASS]: '#83dc58', [T.TALL]: '#4cb84a', [T.RIVER]: '#3fbcf5', [T.SEA]: '#1f8ee3', [T.SAND]: '#f6dc8e', [T.ROCK]: '#8a7f8d', [T.TREE]: '#2d9b52', [T.PATH]: '#ecd09a', [T.FOREST]: '#46a862', [T.FLOWER]: '#83dc58', [T.DUST]: '#dfa86c' };
+  const col = { [T.GRASS]: '#83dc58', [T.TALL]: '#4cb84a', [T.RIVER]: '#3fbcf5', [T.SEA]: '#1f8ee3', [T.SAND]: '#f6dc8e', [T.ROCK]: '#8a7f8d', [T.TREE]: '#2d9b52', [T.PATH]: '#ecd09a', [T.FOREST]: '#46a862', [T.FLOWER]: '#83dc58', [T.DUST]: '#dfa86c', [T.DEEP]: '#14568f', [T.CORAL]: '#ff6f91', [T.WEED]: '#2fae7a' };
   for (let yy = 0; yy < MH; yy++) for (let xx = 0; xx < MW; xx++) { x.fillStyle = col[map[xx + yy * MW]]; x.fillRect(xx * s, yy * s, s, s); }
   const dot = (px, py, cc, r) => { x.fillStyle = cc; x.strokeStyle = OUT; x.lineWidth = 2; x.beginPath(); x.arc(px * s, py * s, r, 0, 7); x.fill(); x.stroke(); };
-  dot(12, 11, '#fff', 6); for (const q of NPCS) { dot(q.x, q.y, G.beaten[q.id] ? '#999' : q.col, 7); x.font = '900 12px Nunito, sans-serif'; x.fillStyle = '#fff'; x.strokeStyle = OUT; x.lineWidth = 3; x.textAlign = 'center'; x.strokeText(q.n, q.x * s, q.y * s - 10); x.fillText(q.n, q.x * s, q.y * s - 10); } dot(hero.x, hero.y, '#ffcf33', 7);
+  dot(12, 11, '#fff', 6); for (const q of NPCS) { if ((q.w || 0) !== wi) continue; dot(q.x, q.y, G.beaten[q.id] ? '#999' : q.col, 7); x.font = '900 12px Nunito, sans-serif'; x.fillStyle = '#fff'; x.strokeStyle = OUT; x.lineWidth = 3; x.textAlign = 'center'; x.strokeText(q.n, q.x * s, q.y * s - 10); x.fillText(q.n, q.x * s, q.y * s - 10); } dot(hero.x, hero.y, '#ffcf33', 7);
   openPanel('Карта', [c, h('p', { text: 'Жёлтая точка: ты. Серые тренеры уже побеждены. Замок Барона Хапуна на острове в море.' })]);
 }
 
@@ -1137,9 +1222,10 @@ addEventListener('pagehide', () => { G.x = hero.x; G.y = hero.y; save(); });
 { const c = $('ballIco').getContext('2d'); drawBall(c, 20, 20, 17, 0); }
 
 if (G.started && !G.storyV) Object.assign(G, { ch: 1, catches: Math.min(3, Math.max(0, G.mine.length - 1)), cages: [0, 0, 0], bigJump: false, beaten: {}, cup: false, x: 12, y: 14 });
-if (!walk(tile(G.x, G.y + .15))) { G.x = 12; G.y = 14; } hero.x = G.x; hero.y = G.y;
+wi = G.world || 0; map = MAPS[wi];
+if (!walk(tile(G.x, G.y + .15)) && !(G.ch >= 4 && isWater(tile(G.x, G.y + .15)))) { wi = 0; map = MAPS[0]; G.world = 0; G.x = 12; G.y = 14; } hero.x = G.x; hero.y = G.y; hero.riding = wi === 0 && isWater(tile(G.x, G.y + .15));
 spawnAll(); makePickups(); go(WORLD);
-if (!G.started) titleScreen(); else if (!G.storyV) intro();
+if (!G.started) titleScreen(); else if (!G.storyV) intro(); else if (G.ch >= 6 && !G.part2) partTwo();
 let last = performance.now();
 function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now;
