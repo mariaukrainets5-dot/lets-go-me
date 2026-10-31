@@ -544,7 +544,7 @@ function cutOut(im) {
   x.putImageData(d, 0, 0); return c;
 }
 SPECIES.forEach((sp, i) => {
-  sp.i = i; if (i >= 18) return; const im = new Image();
+  sp.i = i; const im = new Image();
   im.onload = () => { try { const c = cutOut(im), q = h('canvas', { width: c.width, height: c.height }), x = q.getContext('2d'); x.drawImage(c, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = OUT; x.fillRect(0, 0, q.width, q.height); PORT[i] = c; PSIL[i] = q; } catch (e) { PORT[i] = im; } };
   im.src = 'art/sh/' + i + '.jpg';
 });
