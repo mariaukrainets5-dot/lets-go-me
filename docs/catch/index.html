@@ -42,6 +42,7 @@ button.plain { background: #fff; }
 @media (min-aspect-ratio: 1/1) { #goal { top: calc(env(safe-area-inset-top, 0px) + 36px); max-width: 38vw; } }
 #pads { right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); display: flex; gap: 10px; align-items: flex-end; }
 #btnJump { width: 92px; height: 92px; border-radius: 50%; font-size: 15px; padding: 0; background: var(--red); color: #fff; }
+#pads button.locked { background: #9aa0b5; color: #fff; }
 #btnJump.call { animation: pulse .7s infinite alternate; }
 #btnFind { width: 70px; height: 70px; border-radius: 50%; font-size: 13px; padding: 0; background: var(--sky); color: #fff; }
 @keyframes pulse { to { transform: scale(1.14); } }
@@ -282,7 +283,8 @@ function face(c, x, y, t, sil) {
   c.beginPath(); c.arc(x, y + 8, 5, .25, Math.PI - .25); c.stroke(); c.lineWidth = 4;
 }
 function drawCreature(c, sp, x, y, size, t, flip, sil) {
-  t = t || 0; const A = sil ? OUT : sp.a, B = sil ? OUT : sp.b;
+  t = t || 0; const A = sil ? OUT : sp.a, B = sil ? OUT : sp.b, P = (sil ? PSIL : PORT)[sp.i];
+  if (P) { const d = size * 2.6; c.save(); c.translate(x, y + Math.sin(t * 4 + x * .01) * size * .04); if (flip) c.scale(-1, 1); c.drawImage(P, -d / 2, -d / 2, d, d); c.restore(); return; }
   c.save(); c.translate(x, y); if (flip) c.scale(-1, 1); const k = size / 50; c.scale(k, k);
   c.translate(0, Math.sin(t * 4 + x * .01) * 1.6); c.lineWidth = 4; c.lineJoin = 'round'; c.lineCap = 'round'; c.strokeStyle = OUT;
   let fx = 0, fy = -6, tx = 0, ty = -34;
@@ -480,6 +482,23 @@ function drawArt(c, k, bg, top) {
   c.drawImage(im, (W - w) / 2, top + (area - hh) / 2, w, hh); return true;
 }
 
+/* портреты шмыгов: фон вокруг наклейки убираем заливкой от краёв; пока не загрузились, рисует код */
+const PORT = [], PSIL = [];
+function cutOut(im) {
+  const n = im.naturalWidth, m = im.naturalHeight, c = h('canvas', { width: n, height: m }), x = c.getContext('2d'); x.drawImage(im, 0, 0);
+  const d = x.getImageData(0, 0, n, m), a = d.data, seen = new Uint8Array(n * m), st = [];
+  const light = p => { const i = p * 4, r = a[i], g = a[i + 1], b = a[i + 2]; return Math.min(r, g, b) > 200 && Math.max(r, g, b) - Math.min(r, g, b) < 34; };
+  const push = p => { if (!seen[p] && light(p)) { seen[p] = 1; st.push(p); } };
+  for (let i = 0; i < n; i++) { push(i); push(n * (m - 1) + i); } for (let j = 0; j < m; j++) { push(j * n); push(j * n + n - 1); }
+  while (st.length) { const p = st.pop(), k = p % n; a[p * 4 + 3] = 0; if (k) push(p - 1); if (k < n - 1) push(p + 1); if (p >= n) push(p - n); if (p < n * (m - 1)) push(p + n); }
+  x.putImageData(d, 0, 0); return c;
+}
+SPECIES.forEach((sp, i) => {
+  sp.i = i; const im = new Image();
+  im.onload = () => { try { const c = cutOut(im), q = h('canvas', { width: c.width, height: c.height }), x = q.getContext('2d'); x.drawImage(c, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = OUT; x.fillRect(0, 0, q.width, q.height); PORT[i] = c; PSIL[i] = q; } catch (e) { PORT[i] = im; } };
+  im.src = 'art/sh/' + i + '.jpg';
+});
+
 /* ---------- эффекты ---------- */
 let bits = [], floats = [];
 function burst(x, y, n, cols) { for (let i = 0; i < n; i++) { const a = rnd(0, 6.3), s = rnd(60, 280); bits.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 90, l: rnd(.6, 1.3), c: pick(cols), r: rnd(3, 7) }); } }
@@ -513,7 +532,7 @@ function syncUI() {
   const q = quest(), panelOpen = !$('veil').hidden, badges = ['sonya', 'timur', 'mira'].filter(k => G.beaten[k]).length;
   $('goal').hidden = !world || panelOpen; $('goal').textContent = '🎯 ' + q.t; $('sBadge').hidden = !badges; $('sBadge').textContent = '🏅 ' + badges + '/3';
   $('mTown').classList.toggle('call', world && q.btn === 'mTown'); $('mSport').classList.toggle('call', world && q.btn === 'mSport');
-  $('btnJump').hidden = G.ch < 2; $('btnFind').hidden = !G.beaten.sonya; $('pads').hidden = !world || !$('veil').hidden;
+  const jb = $('btnJump'), fb = $('btnFind'); jb.classList.toggle('locked', G.ch < 2); fb.classList.toggle('locked', !G.beaten.sonya); jb.textContent = (G.ch < 2 ? '🔒 ' : '') + 'Прыжок'; fb.textContent = (G.beaten.sonya ? '' : '🔒 ') + 'Искать'; $('pads').hidden = !world || !$('veil').hidden;
   b.textContent = G.balls; $('sCoins').textContent = G.coins; $('sDex').textContent = caughtSet().size + '/' + SPECIES.length; $('sCup').hidden = !G.cup; $('mSound').textContent = G.mute ? '🔇' : '🔊';
 }
 const busy = () => !$('talk').hidden || !$('veil').hidden;
@@ -552,12 +571,15 @@ function tryStep(nx, ny) {
   return true;
 }
 function doJump() {
-  if (scene !== WORLD || busy() || hero.jump > 0 || hero.riding || G.ch < 2) return;
+  if (scene !== WORLD || busy() || hero.jump > 0 || hero.riding) return;
+  if (G.ch < 2) { toast('Прыжок откроется, когда победишь Шныря у реки'); return; }
   let dx = hero.vx, dy = hero.vy, l = Math.hypot(dx, dy); if (l < .01) { dx = hero.dir; dy = 0; l = 1; }
   hero.jump = .52; hero.jx = dx / l; hero.jy = dy / l; hero.ox = hero.x; hero.oy = hero.y; sfx.jump();
 }
 function radar() {
-  if (scene !== WORLD || busy()) return; const have = caughtSet(); let best = null, bd = 1e9;
+  if (scene !== WORLD || busy()) return;
+  if (!G.beaten.sonya) { toast('Кнопку «Искать» даст Соня в лесу. Пока иди за красной стрелкой'); return; }
+  const have = caughtSet(); let best = null, bd = 1e9;
   for (const w of wilds) { const d = Math.hypot(w.x - hero.x, w.y - hero.y) * (have.has(w.sp) ? 3 : 1); if (d < bd) { bd = d; best = w; } }
   if (best) { hero.target = best; hero.radar = 4; sfx.ui(); toast(SPECIES[best.sp].n + (have.has(best.sp) ? ' где-то рядом' : ' — такого у тебя ещё нет!')); }
 }
