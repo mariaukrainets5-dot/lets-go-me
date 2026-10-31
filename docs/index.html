@@ -103,6 +103,10 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
 #answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 #taskQ { font-family: var(--body); font-weight: 900; font-size: clamp(19px, 4.4vw, 23px); line-height: 1.2; }
 #task .card { gap: 8px; padding: 12px 16px; }
+#taskPic { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+#taskPic:empty { display: none; }
+#taskPic span { display: grid; grid-template-columns: repeat(var(--n), 9px); gap: 2px; }
+#taskPic i { width: 9px; height: 9px; border-radius: 50%; background: var(--sun); box-shadow: inset 0 0 0 1px var(--ink); }
 #taskKicker { font-size: 13px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--coral); }
 #taskHint { min-height: 1.3em; font-size: 15px; font-weight: 800; color: var(--muted); }
 #claim { align-items: flex-end; justify-content: center; }
@@ -174,6 +178,7 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
           <label><input type="radio" name="diff" value="1" checked><span>Смелое</span></label>
           <label><input type="radio" name="diff" value="2"><span>Капитанское</span></label>
         </div>
+        <p class="note">Лёгкое: ×2, ×3, ×5, ×10. Смелое: ×3, ×4, ×8 до 10. Капитанское: ×3, ×4, ×8 до 12.</p>
       </div>
       <div class="field">Какие ботинки?
         <div class="opts" role="radiogroup" aria-label="Цвет ботинок">
@@ -192,6 +197,7 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
       <h2 id="taskQ"></h2>
       <div id="answers"></div>
       <p id="taskHint" role="status"></p>
+      <div id="taskPic" aria-hidden="true"></div>
     </div>
   </section>
 
@@ -318,49 +324,68 @@ function hud() {
   $('pearls').textContent = G.pearls;
 }
 
-/* ---------- tasks ---------- */
-const nearby = n => {
-  const s = new Set();
-  while (s.size < 3) { const v = n + (Math.random() < .5 ? -1 : 1) * R(1, Math.max(3, Math.round(n * .25))); if (v > 0 && v !== n) s.add(v); }
+/* ---------- tasks: Year 3 multiplication built from adding and taking away ---------- */
+const LEVELS = [{ tables: [2, 5, 10, 3], most: 5 }, { tables: [3, 4, 8], most: 10 }, { tables: [3, 4, 8], most: 12 }];
+const SCENES = [
+  ['В', 'ракушках', 'жемчужины', 'жемчужин'], ['На', 'лодках', 'гарпуна', 'гарпунов'], ['В', 'сундуках', 'монеты', 'монет'],
+  ['В', 'сетях', 'рыбы', 'рыб'], ['У', 'крокодилов', 'зуба', 'зубов']
+];
+const any = list => list[R(0, list.length - 1)];
+const chain = (b, a) => Array(a).fill(b).join(' + ');
+const pair = (L, lo = 2, hi = L.most) => {
+  const b = any(L.tables);
+  let a = R(lo, Math.min(hi, L.most));
+  if (a === 2 && b === 2) a = 3;
+  return { a, b, ab: a * b };
+};
+const scene = ({ a, b }) => { const [at, place, few, many] = any(SCENES); return `${at} ${a} ${place} по ${b} ${b < 5 ? few : many}. Сколько всего?`; };
+const slips = (a, b) => [a + b, (a + 1) * b, (a - 1) * b, a * (b + 1), a * (b - 1)];
+const wrongs = (right, ideas) => {
+  const s = new Set(shuffle(ideas.filter(v => v > 0 && v !== right)).slice(0, 3));
+  for (let d = 1; s.size < 3; d++) { if (right - d > 0) s.add(right - d); if (s.size < 3) s.add(right + d); }
   return [...s];
 };
-const num = (q, a) => ({ q, right: String(a), wrong: nearby(a).map(String) });
-const word = (q, right, ...wrong) => ({ q, right, wrong });
+const num = (q, right, ideas, hint, pic) => ({ q, right: String(right), wrong: wrongs(right, ideas).map(String), hint, pic });
+const word = (q, right, wrong, hint, pic) => ({ q, right, wrong, hint, pic });
 
-const TASKS = [
-  [
-    () => { const a = R(3, 9), b = R(2, 8); return num(`У тебя ${a} жемчужин. Русалка дала ещё ${b}. Сколько стало?`, a + b); },
-    () => { const a = R(6, 12), b = R(2, 5); return num(`Вокруг лодки плавало ${a} акул. ${b} уплыли. Сколько осталось?`, a - b); },
-    () => { const s = R(1, 4) * 2; return num(`Какое число дальше: ${s}, ${s + 2}, ${s + 4}, ${s + 6}, ?`, s + 8); },
-    () => num('Сколько щупалец у осьминога?', 8),
-    () => word('Чем дышит кит?', 'Воздухом, как мы', 'Водой, как рыба', 'Он не дышит', 'Песком'),
-    () => word('Кто живёт в море?', 'Кит', 'Корова', 'Белка', 'Заяц'),
-    () => { const a = R(2, 4), b = R(2, 3); return num(`В ${a} ракушках лежит по ${b} жемчужины. Сколько всего жемчужин?`, a * b); }
-  ],
-  [
-    () => { const a = R(3, 6), b = R(3, 7); return num(`На ${a} лодках по ${b} гарпунов. Сколько всего гарпунов?`, a * b); },
-    () => { const a = R(50, 80), b = R(20, 40), c2 = R(10, 15); return num(`В ботинках было ${a} силы. Полёт забрал ${b}, море вернуло ${c2}. Сколько силы теперь?`, a - b + c2); },
-    () => { const s = R(2, 4); return num(`Какое число дальше: ${s}, ${s * 2}, ${s * 4}, ${s * 8}, ?`, s * 16); },
-    () => word('Кто из них рыба?', 'Акула', 'Кит', 'Дельфин', 'Тюлень'),
-    () => word('Какое животное самое большое на Земле?', 'Синий кит', 'Слон', 'Белая акула', 'Жираф'),
-    () => word('Кит дальше акулы, а акула дальше русалки. Кто ближе всех к тебе?', 'Русалка', 'Кит', 'Акула', 'Все рядом'),
-    () => { const a = R(3, 6), b = 12 * a; return num(`${b} рыбок разделили поровну на ${a} русалок. Сколько рыбок у каждой?`, 12); }
-  ],
-  [
-    () => { const a = R(4, 8), b = R(20, 45); return num(`Ты бежишь ${a} метров в секунду. Сколько метров ты пробежишь за ${b} секунд?`, a * b); },
-    () => { const a = R(3, 9) * 20; return num(`Сколько будет 25% от ${a} жемчужин?`, a / 4); },
-    () => num('Какое число дальше: 1, 1, 2, 3, 5, 8, ?', 13),
-    () => { const n = R(4, 7); return num(`Какое число дальше: ${(n - 3) ** 2}, ${(n - 2) ** 2}, ${(n - 1) ** 2}, ${n ** 2}, ?`, (n + 1) ** 2); },
-    () => word('Из чего скелет акулы?', 'Из хряща', 'Из кости', 'Из коралла', 'Скелета нет'),
-    () => num('Сколько сердец у осьминога?', 3),
-    () => word('Красная лодка быстрее синей, зелёная медленнее синей. Какая самая медленная?', 'Зелёная', 'Синяя', 'Красная', 'Все одинаковые'),
-    () => { const a = R(3, 5), b = R(11, 15); return num(`Кит проплыл ${a * b} км за ${a} часа. Какая у него скорость в км/ч?`, b); }
-  ]
+const KINDS = {
+  short: L => { const { a, b } = pair(L, 2, 6); return word(`${chain(b, a)}. Как записать короче?`, `${a} × ${b}`, [`${a + 1} × ${b}`, `${a - 1} × ${b}`, `${a} + ${b}`], `Сосчитай, сколько раз повторяется ${b}.`, [a, b]); },
+  same: L => { const { a, b } = pair(L, 3, 5); return word(`Что равно ${a} × ${b}?`, chain(b, a), [chain(b, a - 1), chain(b, a + 1), a === b ? chain(b, a + 2) : `${a} + ${b}`], `${a} × ${b} это ${a} lots of ${b}: ${a} ${a < 5 ? 'группы' : 'групп'} по ${b}.`, [a, b]); },
+  sum: L => { const f = pair(L, 2, 6); return num(`${scene(f)} ${chain(f.b, f.a)} = ?`, f.ab, slips(f.a, f.b), 'Складывай по одной группе.', [f.a, f.b]); },
+  times: L => { const f = pair(L); return num(scene(f), f.ab, slips(f.a, f.b), `${f.a} lots of ${f.b}: ${chain(f.b, f.a)}`, f.a < 7 ? [f.a, f.b] : null); },
+  up: L => { const b = any(L.tables), k = R(1, L.most - 3); return num(`Прыгай вперёд по ${b}: ${k * b}, ${(k + 1) * b}, ${(k + 2) * b}, ?`, (k + 3) * b, [(k + 4) * b, (k + 2) * b, (k + 3) * b + 1, (k + 3) * b - 1], `Прибавь ${b} к последнему числу.`); },
+  down: L => { const b = any(L.tables), k = R(1, L.most - 3); return num(`Прыгай назад по ${b}: ${(k + 3) * b}, ${(k + 2) * b}, ${(k + 1) * b}, ?`, k * b, [(k + 2) * b, (k - 1) * b, k * b + 1, k * b - 1], `Отними ${b} от последнего числа.`); },
+  share: L => {
+    const { a, b, ab } = pair(L), q = any([`Рыб в стае: ${ab}. Акула за раз съедает ${b}. Сколько раз она поест, пока рыбы не кончатся?`, `Жемчужин у тебя: ${ab}. Каждой русалке даёшь ${b}. На сколько русалок хватит?`]);
+    return num(q, a, [a + 1, a - 1, b, a + 2], `Отнимай по ${b}, пока не получишь 0: ${ab} − ${b} − ${b} − … Считай, сколько раз отнял.`);
+  },
+  gap: L => { const { a, b, ab } = pair(L); return num(`? × ${b} = ${ab}`, a, [a + 1, a - 1, b, a + 2], `Прибавляй по ${b}, пока не дойдёшь до ${ab}. Считай, сколько раз прибавил.`); },
+  more: L => { const { a, b, ab } = pair(L, 2, L.most - 1); return num(`${a} × ${b} = ${ab}. Добавь ещё одну группу по ${b}. Сколько будет ${a + 1} × ${b}?`, ab + b, [ab + 1, ab, ab + 2 * b, ab + b + 1], `Прибавь одну группу: ${ab} + ${b} = ?`, a < 6 ? [a + 1, b] : null); },
+  less: L => { const { a, b, ab } = pair(L, 3); return num(`${a} × ${b} = ${ab}. Убери одну группу по ${b}. Сколько будет ${a - 1} × ${b}?`, ab - b, [ab - 1, ab, ab - 2 * b, ab - b + 1], `Отними одну группу: ${ab} − ${b} = ?`, a < 7 ? [a - 1, b] : null); },
+  double: L => { const a = R(2, L.most), four = 4 * a; return num(`4 × ${a} = ${four}. Восьмёрка это две четвёрки. Сколько будет 8 × ${a}?`, 2 * four, [four, 2 * four + 8, 2 * four - 8, 2 * four + 1], `Удвой ответ: ${four} + ${four} = ?`); }
+};
+const PLAN = [
+  ['short', 'same', 'sum', 'times', 'up', 'share', 'more'],
+  ['short', 'same', 'sum', 'times', 'up', 'down', 'share', 'gap', 'more', 'less'],
+  ['times', 'down', 'share', 'gap', 'more', 'less', 'double']
 ];
 
 function nextTask() {
-  if (!deck.length) deck = shuffle(TASKS[diff].slice());
-  return deck.pop()();
+  if (!deck.length) deck = shuffle(PLAN[diff].slice());
+  return KINDS[deck.pop()](LEVELS[diff]);
+}
+
+function drawGroups(pic) {
+  const box = $('taskPic');
+  box.textContent = '';
+  if (!pic) return;
+  const [a, b] = pic;
+  for (let i = 0; i < a; i++) {
+    const g = document.createElement('span');
+    g.style.setProperty('--n', b > 5 ? Math.ceil(b / 2) : b);
+    for (let j = 0; j < b; j++) g.appendChild(document.createElement('i'));
+    box.appendChild(g);
+  }
 }
 
 function ask(kicker, solved) {
@@ -368,6 +393,7 @@ function ask(kicker, solved) {
   $('taskKicker').textContent = kicker;
   $('taskQ').textContent = t.q;
   $('taskHint').textContent = '';
+  drawGroups(null);
   box.textContent = '';
   shuffle([t.right, ...t.wrong]).forEach(a => {
     const b = document.createElement('button');
@@ -378,7 +404,8 @@ function ask(kicker, solved) {
         show(null); solved();
       } else {
         G.misses++; b.disabled = true;
-        $('taskHint').textContent = 'Почти! Подумай ещё раз.';
+        $('taskHint').textContent = `Почти! ${t.hint}`;
+        drawGroups(t.pic);
         tone(180, .18, 'square', .04);
       }
     });
