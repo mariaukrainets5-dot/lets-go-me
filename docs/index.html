@@ -125,6 +125,19 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
 .checks i { font-style: normal; font-weight: 900; width: 18px; flex: none; text-align: center; color: var(--lagoon); }
 .checks li.no { color: var(--muted); }
 .checks li.no i { color: var(--muted); }
+.levels { display: grid; gap: 8px; }
+.lvl { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 10px; text-align: left; background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 6px 10px; box-shadow: 3px 3px 0 var(--ink); font-size: 16px; font-weight: 900; line-height: 1.15; }
+.lvl:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.lvl > b { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--sun); border: 3px solid var(--ink); box-sizing: border-box; font-size: 15px; }
+.lvl small { display: block; font-size: 13px; font-weight: 700; color: var(--muted); }
+.lvl i { font-style: normal; color: var(--coral); letter-spacing: 1px; font-size: 15px; }
+.lvl[disabled] { background: #dfe7e4; box-shadow: none; cursor: default; color: var(--muted); }
+.lvl[disabled] > b { background: #c9d6d3; }
+.heroes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.who { display: grid; justify-items: center; gap: 0; background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 2px 2px 5px; font-size: 12px; font-weight: 900; line-height: 1.1; min-width: 0; }
+.who canvas { width: 62px; height: 62px; }
+.who[aria-pressed="true"] { background: var(--sun); box-shadow: 3px 3px 0 var(--ink); }
+.who[disabled] { background: #dfe7e4; color: var(--muted); cursor: default; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .actions .go { flex: 1 1 200px; }
 .actions .quiet { background: #fff; }
@@ -168,13 +181,13 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
   <section class="screen" id="menu">
     <form class="card" id="startForm">
       <h1>Let's Go Me</h1>
-      <p class="lead">Китобои поймали кита на огромную удочку и хотят его съесть. Надевай летающие ботинки, беги по морю, спаси кита и забери приз!</p>
+      <p class="lead">Пять морей, пять разных приключений. Надевай летающие ботинки, беги по воде, решай примеры и спасай друзей!</p>
       <div class="keys">
         <div><b>Вверх</b>Стрелка ↑ или верх экрана: лети над водой</div>
         <div><b>Вниз</b>Стрелка ↓ или низ экрана: ныряй за круглыми щитами</div>
         <div><b>Отпусти</b>Беги по воде, ботинки снова зарядятся</div>
       </div>
-      <p class="note">Акулы и крокодилы хотят тебя поймать. Щит спасёт от одного укуса. Спаси русалок от акул, и они споют так, что все хищники разбегутся.</p>
+      <p class="note">Круглый щит спасёт от одного удара. Новые герои открываются за пройденные моря.</p>
       <label class="field" for="who">Как зовут героя?
         <input id="who" name="who" maxlength="16" autocomplete="off" placeholder="Напиши имя">
       </label>
@@ -197,6 +210,17 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
     </form>
   </section>
 
+  <section class="screen" id="map" hidden>
+    <div class="card">
+      <h2>Куда бежим?</h2>
+      <div class="levels" id="levels"></div>
+      <h2>Кто бежит?</h2>
+      <div class="heroes" id="heroes"></div>
+      <p class="note" id="heroPerk"></p>
+      <button class="go quiet" type="button" id="backBtn">Назад</button>
+    </div>
+  </section>
+
   <section class="screen low" id="task" hidden>
     <div class="card" role="dialog" aria-labelledby="taskQ">
       <p id="taskKicker"></p>
@@ -210,7 +234,7 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
   <section class="screen" id="caught" hidden>
     <div class="card">
       <h2 id="caughtTitle">Ам! Тебя поймали</h2>
-      <p class="lead">Кит ещё ждёт. Настоящие герои не сдаются, поэтому ты начинаешь с последнего буя.</p>
+      <p class="lead">Настоящие герои не сдаются. Попробуй ещё раз, друзья ждут!</p>
       <button class="go" type="button" id="againBtn">Снова в путь</button>
     </div>
   </section>
@@ -221,7 +245,7 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
       <p class="lead">Море подождёт. Кит тоже.</p>
       <div class="actions">
         <button class="go" type="button" id="resumeBtn">Дальше</button>
-        <button class="go quiet" type="button" id="quitBtn">В меню</button>
+        <button class="go quiet" type="button" id="quitBtn">На карту</button>
       </div>
     </div>
   </section>
@@ -241,14 +265,16 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
           <path d="M33 30c5-7 16-7 21 0-5 2-7 5-8 8-2-4-7-7-13-8z" fill="#2f6fb0" stroke="#072b3f" stroke-width="3"/>
         </svg>
         <div>
-          <h2>Кубок Спасителя Китов</h2>
+          <h2 id="prizeName"></h2>
           <p class="lead" id="winName"></p>
         </div>
       </div>
       <ul class="checks" id="checks"></ul>
       <p class="note" id="winNote"></p>
       <div class="actions">
-        <button class="go" type="button" id="replayBtn">Ещё раз</button>
+        <button class="go" type="button" id="nextBtn">Дальше</button>
+        <button class="go quiet" type="button" id="replayBtn">Ещё раз</button>
+        <button class="go quiet" type="button" id="mapBtn">На карту</button>
       </div>
     </div>
   </section>
@@ -258,9 +284,10 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
-const cv = $('sea'), c = cv.getContext('2d');
+const cv = $('sea');
+let c = cv.getContext('2d');
 const INK = '#072b3f', FOAM = '#fdf8e4', SUN = '#ffc933', CORAL = '#ff5a3c', MINT = '#4fd8a4', WHALE = '#2f6fb0';
-const PX = 9, TOTAL = 3000, GATES = [1000, 2000], MERMAIDS = [650, 1500, 2450];
+const PX = 9;
 const DIFF = { speed: [.85, 1, 1.12], gap: [1.3, 1, .88], shieldEvery: [280, 400, 520] };
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -269,6 +296,68 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const ease = t => t * t * (3 - 2 * t);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = R(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+/* ---------- seas and heroes ---------- */
+const fight = (leg, ...rest) => rest.map(([k, w, grow = 0]) => [k, w + leg * grow]);
+const WORLDS = [
+  {
+    id: 'whale', name: 'Кит на удочке', mark: 'кит', goal: 'far', total: 3000, tasks: 3, gap: 1, cold: 1, wave: 1, mermaids: [650, 1500, 2450],
+    brief: 'Беги к китобоям и развяжи верёвку', say: 'Спаси кита от китобоев!', tip: 'Щит спасает от одного укуса.',
+    taskName: 'Узел', taskDo: 'развяжи верёвку', freed: 'Кит свободен!', prize: 'Кубок Спасителя Китов', done: 'Кит спасён',
+    gateSay: ['Верно! Плыви дальше, там китобои!', 'Верно! Кит совсем близко!'],
+    sky: ['#5fcbe2', '#b9ecd9', '#fff0b8'], water: ['#12aeab', '#0b7f95', '#06365a'], sand: '#d7b77b', weeds: ['#16805f', '#0f6d70'], hills: ['#6fbf9a', '#58a98d'], cloud: 'rgba(253,248,228,.92)', sun: SUN,
+    pool: leg => fight(leg, ['croc', 3], ['shark', 3], ['pearls', 2], ['leap', 1, 1], ['hook', 0, 2], ['combo', leg === 2 ? 1 : 0])
+  },
+  {
+    id: 'storm', name: 'Черепашата в шторм', mark: 'маяк', goal: 'collect', item: 'raft', rafts: 4, every: 480, tasks: 3, gap: 1, cold: 1, wave: 2.4, mermaids: [],
+    brief: 'Собери 4 плотика с черепашатами и зажги маяк', say: 'Собери 4 плотика с черепашатами!', tip: 'Когда мигает молния, ныряй!',
+    taskName: 'Лампа', taskDo: 'зажги маяк', freed: 'Маяк горит! Все дома!', prize: 'Кубок Хранителя Маяка', done: 'Черепашата спасены',
+    gateSay: ['Верно! Шторм всё сильнее, держись!', 'Верно! Уже виден берег!'],
+    sky: ['#2b3a55', '#4d5f7a', '#8b9bab'], water: ['#2c7f8c', '#1a5670', '#0a2a45'], sand: '#a99a7c', weeds: ['#1f6a5c', '#16545c'], hills: ['#3f5f60', '#35504f'], cloud: 'rgba(66,80,104,.95)',
+    pool: leg => fight(leg, ['bolt', 3, 1], ['barrel', 3], ['jelly', 3, 1], ['pearls', 2], ['shark', 1])
+  },
+  {
+    id: 'ice', name: 'Ледяная клетка', mark: 'клетка', goal: 'collect', item: 'key', rafts: 3, every: 620, tasks: 3, gap: 1.05, cold: 1.5, wave: .7, mermaids: [],
+    brief: 'Найди 3 золотых ключа и открой клетку', say: 'Найди 3 золотых ключа!', tip: 'Вода ледяная: под водой сила тает быстрее.',
+    taskName: 'Замок', taskDo: 'открой клетку', freed: 'Пингвинята на свободе!', prize: 'Кубок Друга Пингвинов', done: 'Пингвинята спасены',
+    gateSay: ['Верно! Ищи следующий ключ!', 'Верно! Клетка уже близко!'],
+    sky: ['#a9dcf2', '#d9f1f7', '#f7fbff'], water: ['#3fb2cf', '#2284ab', '#0c4470'], sand: '#dfe9ee', weeds: ['#6fa8bd', '#5a93aa'], hills: ['#eef7fb', '#d6e8f2'], cloud: 'rgba(255,255,255,.95)', sun: '#fff1b0',
+    pool: leg => fight(leg, ['berg', 3, 1], ['orca', 3, 1], ['snow', 3, 1], ['pearls', 2])
+  },
+  {
+    id: 'cave', name: 'Пещера осьминога', mark: 'выход', goal: 'far', total: 2700, tasks: 3, gap: .95, cold: 1, wave: .6, mermaids: [],
+    brief: 'Убеги от гигантского осьминога к выходу', say: 'Беги! Осьминог за тобой!', tip: 'Каждый удар подпускает щупальца ближе.',
+    taskName: 'Камень', taskDo: 'разбери завал', freed: 'Выход открыт!', prize: 'Кубок Смелого Беглеца', done: 'Ты убежал от осьминога',
+    gateSay: ['Верно! Щупальца отстали!', 'Верно! Впереди свет!'],
+    sky: ['#0c1626', '#16263a', '#21394c'], water: ['#127a78', '#0b4d60', '#051f33'], sand: '#4b4a55', weeds: ['#1f8f7a', '#3a6fa8'], hills: ['#1d2c40', '#172436'], cloud: null,
+    pool: leg => fight(leg, ['stal', 3, 1], ['eel', 3, 1], ['puffer', 3, 1], ['pearls', 2])
+  },
+  {
+    id: 'pirate', name: 'Пиратский остров', mark: 'пираты', goal: 'far', total: 3000, tasks: 5, gap: .92, cold: 1, wave: 1.2, mermaids: [1400],
+    brief: 'Доберись до пиратов и подбей корабль примерами', say: 'Вперёд, на пиратов!', tip: 'Каждый верный ответ это выстрел из пушки.',
+    taskName: 'Выстрел', taskDo: 'реши и стреляй', freed: 'Пираты сбежали!', prize: 'Кубок Адмирала Морей', done: 'Пираты побеждены',
+    gateSay: ['Верно! Пушки уже рядом!', 'Верно! Вижу чёрный флаг!'],
+    sky: ['#f2743f', '#f9a95e', '#ffe2a0'], water: ['#178f95', '#0e6280', '#072f50'], sand: '#c49a63', weeds: ['#14785a', '#0f6470'], hills: ['#7b4a3c', '#5e3a35'], cloud: 'rgba(255,226,190,.85)', sun: '#ffe08a',
+    pool: leg => fight(leg, ['ball', 3, 1], ['mine', 3, 1], ['parrot', 3], ['shark', 2], ['pearls', 2], ['croc', 1])
+  }
+];
+const HEROES = [
+  { id: 'runner', name: 'Бегун', perk: 'Ботинки заряжаются быстрее', fly: 1, dive: 1, charge: 1.4, suit: SUN, cape: CORAL, skin: '#f1c49c', hair: '#54311f', after: 0 },
+  { id: 'diver', name: 'Ныряльщица', perk: 'Под водой почти не устаёт', fly: 1, dive: .4, charge: 1, suit: '#17b8a6', skin: '#c98d5e', hair: '#2a1a14', after: 0 },
+  { id: 'robot', name: 'Робот Болтик', perk: 'Четыре сердца вместо трёх', fly: 1, dive: 1, charge: 1, hearts: 4, suit: '#9db4c0', skin: '#cfdde3', after: 1 },
+  { id: 'penguin', name: 'Пингвин Пип', perk: 'Под водой не устаёт, но летает хуже', fly: 1.5, dive: 0, charge: 1, suit: '#22354a', skin: '#22354a', after: 2 },
+  { id: 'cat', name: 'Кот Мур', perk: 'Притягивает жемчуг и начинает со щитом', fly: 1, dive: 1, charge: 1, magnet: true, shields: 1, suit: '#f0953a', skin: '#f0953a', after: 3 },
+  { id: 'dragon', name: 'Дракончик', perk: 'Летает очень долго', fly: .4, dive: 1.2, charge: 1, suit: '#3f9b5c', skin: '#58b874', cape: '#2b7a46', after: 4 }
+];
+const CAUGHT = {
+  croc: 'Клац! Крокодил тебя поймал', hook: 'Попался на крючок китобоев', shark: 'Ам! Акула тебя поймала', bolt: 'Бах! В тебя попала молния',
+  barrel: 'Бум! Бочка сбила тебя', jelly: 'Ай! Медуза ужалила', berg: 'Бух! Ты врезался в айсберг', orca: 'Ам! Косатка тебя поймала', snow: 'Бац! Снежок сбил тебя',
+  stal: 'Ой! На тебя упала сосулька из камня', eel: 'Ай! Угорь ударил током', puffer: 'Ой! Рыба-ёж уколола', ball: 'Бах! Попало ядро', mine: 'Бум! Ты задел мину', parrot: 'Ай! Попугай клюнул'
+};
+let world = WORLDS[0], hero = HEROES[0], stars = [];
+const wins = () => { let n = 0; while (n < WORLDS.length && stars[n]) n++; return n; };
+function saveMe() { try { localStorage.setItem('lgm-me', JSON.stringify({ heroName, diff, boots, hero: hero.id })); } catch (e) {} }
+function saveStars() { try { localStorage.setItem('lgm-stars', JSON.stringify(stars)); } catch (e) {} }
 
 let W = 960, H = 540, SEA = 248, T = 0, last = 0;
 let skyG, waterG;
@@ -282,12 +371,17 @@ function resize() {
   const dpr = Math.min(devicePixelRatio || 1, 2);
   cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
   SEA = Math.round(H * .46);
-  skyG = c.createLinearGradient(0, 0, 0, SEA);
-  skyG.addColorStop(0, '#5fcbe2'); skyG.addColorStop(.7, '#b9ecd9'); skyG.addColorStop(1, '#fff0b8');
-  waterG = c.createLinearGradient(0, SEA, 0, H);
-  waterG.addColorStop(0, '#12aeab'); waterG.addColorStop(.35, '#0b7f95'); waterG.addColorStop(1, '#06365a');
+  paint();
   p.x = Math.round(W * .2);
   if (!G || G.mode === 'menu') p.y = SEA - 26;
+  if (!$('map').hidden) renderMap();
+}
+
+function paint() {
+  skyG = c.createLinearGradient(0, 0, 0, SEA);
+  [0, .7, 1].forEach((at, i) => skyG.addColorStop(at, world.sky[i]));
+  waterG = c.createLinearGradient(0, SEA, 0, H);
+  [0, .35, 1].forEach((at, i) => waterG.addColorStop(at, world.water[i]));
 }
 
 /* ---------- state ---------- */
@@ -300,11 +394,13 @@ function fresh() {
   return {
     mode: 'menu', dist: 0, speed: 90, base: 250, hearts: 3, shields: 0, force: 100, locked: false,
     pearls: 0, saved: 0, misses: 0, song: 0, inv: 0, shake: 0, spawnIn: 500, gate: 0, checkpoint: 0,
-    nextShield: 180, spawnedM: [false, false, false], rescued: [false, false, false], tut: 0, final: null
+    nextShield: 180, spawnedM: [], rescued: [], tut: 0, final: null, max: 3, flash: 0,
+    got: 0, target: 0, step: 1, taken: 0, placed: 0, nextItem: 0
   };
 }
 const metres = () => G.dist / PX;
-const legOf = m => m < GATES[0] ? 0 : m < GATES[1] ? 1 : 2;
+const gates = () => world.goal === 'far' ? [world.total / 3, world.total * 2 / 3] : [];
+const progress = () => clamp(world.goal === 'far' ? metres() / world.total : G.got / (G.target || 1), 0, 1);
 
 /* ---------- sound ---------- */
 function tone(f, d = .12, type = 'sine', v = .07, to = 0, delay = 0) {
@@ -318,14 +414,14 @@ function tone(f, d = .12, type = 'sine', v = .07, to = 0, delay = 0) {
 const fanfare = () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, 'triangle', .09, 0, i * .13));
 
 /* ---------- screens and HUD ---------- */
-const SCREENS = ['menu', 'task', 'caught', 'pause', 'claim', 'win'];
+const SCREENS = ['menu', 'map', 'task', 'caught', 'pause', 'claim', 'win'];
 function show(id) { SCREENS.forEach(s => { $(s).hidden = s !== id; }); }
 
 let toastT = 0;
 function say(text, secs = 2.2) { const t = $('toast'); t.textContent = text; t.classList.add('on'); toastT = secs; }
 
 function hud() {
-  $('hearts').textContent = '♥'.repeat(G.hearts) + '♡'.repeat(3 - G.hearts);
+  $('hearts').textContent = '♥'.repeat(G.hearts) + '♡'.repeat(G.max - G.hearts);
   $('shields').textContent = G.shields;
   $('pearls').textContent = G.pearls;
 }
@@ -423,67 +519,120 @@ function ask(kicker, solved) {
 }
 
 /* ---------- flow ---------- */
-function start() {
+function start(n) {
+  world = WORLDS[n]; paint();
   G = fresh(); ents = []; parts = []; deck = [];
   G.mode = 'play'; G.base = 250 * DIFF.speed[diff]; G.speed = G.base;
-  G.tut = 8; p.y = SEA - 26; p.vy = 0;
+  G.max = hero.hearts || 3; G.hearts = G.max; G.shields = hero.shields || 0;
+  if (world.goal === 'collect') {
+    G.step = world.item === 'raft' ? any(LEVELS[diff].tables) : 1;
+    G.target = G.step * world.rafts; G.nextItem = 120;
+  }
+  G.tut = n === 0 && !stars[0] ? 8 : 0; p.y = SEA - 26; p.vy = 0;
+  document.querySelector('.map b').textContent = world.mark;
   show(null); $('hud').hidden = false; hud();
+  say(`${world.say} ${world.tip}`, 5);
 }
 
-function toMenu() {
+function toMap() {
   G = fresh(); ents = []; parts = [];
-  $('hud').hidden = true; show('menu'); p.y = SEA - 26; p.vy = 0;
+  $('hud').hidden = true; p.y = SEA - 26; p.vy = 0;
+  renderMap(); show('map');
+}
+
+function renderMap() {
+  const open = wins(), box = $('levels');
+  box.textContent = '';
+  WORLDS.forEach((w, i) => {
+    const b = document.createElement('button'), n = document.createElement('b'), t = document.createElement('span'), s = document.createElement('i');
+    b.type = 'button'; b.className = 'lvl'; b.disabled = i > open;
+    n.textContent = i + 1;
+    t.textContent = w.name;
+    const sub = document.createElement('small'); sub.textContent = i > open ? 'Сначала пройди прошлое море' : w.brief; t.appendChild(sub);
+    s.textContent = i > open ? '' : '★'.repeat(stars[i] || 0) + '☆'.repeat(3 - (stars[i] || 0));
+    b.append(n, t, s);
+    b.addEventListener('click', () => start(i));
+    box.appendChild(b);
+  });
+  const row = $('heroes');
+  row.textContent = '';
+  HEROES.forEach(h => {
+    const b = document.createElement('button'), pic = document.createElement('canvas'), t = document.createElement('span');
+    b.type = 'button'; b.className = 'who'; b.disabled = h.after > open; b.setAttribute('aria-pressed', h === hero);
+    pic.width = pic.height = 128; pic.setAttribute('aria-hidden', 'true');
+    t.textContent = h.after > open ? `После моря ${h.after}` : h.name;
+    b.append(pic, t);
+    b.addEventListener('click', () => { hero = h; saveMe(); renderMap(); });
+    row.appendChild(b);
+    portrait(pic, h, h.after > open);
+  });
+  $('heroPerk').textContent = `${hero.name}: ${hero.perk.toLowerCase()}.`;
+}
+
+function portrait(pic, h, locked) {
+  const main = c, was = hero, s = 1.75;
+  c = pic.getContext('2d'); hero = h;
+  c.setTransform(s, 0, 0, s, 60, 74 - (SEA - 26) * s);
+  drawHero(0, SEA - 26, 0, false);
+  c = main; hero = was;
+  if (locked) pic.style.filter = 'brightness(0) opacity(.35)';
 }
 
 function caught() {
   G.mode = 'caught'; input.up = input.down = false;
-  $('caughtTitle').textContent = G.lastBy === 'croc' ? 'Клац! Крокодил тебя поймал' : G.lastBy === 'hook' ? 'Попался на крючок китобоев' : 'Ам! Акула тебя поймала';
+  $('caughtTitle').textContent = CAUGHT[G.lastBy] || CAUGHT.shark;
   tone(220, .5, 'sawtooth', .07, 70);
   show('caught');
   $('againBtn').focus({ preventScroll: true });
 }
 
 function respawn() {
-  G.dist = G.checkpoint * PX; G.hearts = 3; G.force = 100; G.locked = false; G.inv = 2; G.song = 0;
-  G.spawnIn = 400; ents = []; G.gate = GATES.filter(g => g <= G.checkpoint).length;
-  MERMAIDS.forEach((m, i) => { if (m > G.checkpoint && !G.rescued[i]) G.spawnedM[i] = false; });
+  G.hearts = G.max; G.force = 100; G.locked = false; G.inv = 2; G.song = 0; G.spawnIn = 400; ents = [];
+  if (world.goal === 'far') {
+    G.dist = G.checkpoint * PX; G.gate = gates().filter(g => g <= G.checkpoint).length;
+    world.mermaids.forEach((m, i) => { if (m > G.checkpoint && !G.rescued[i]) G.spawnedM[i] = false; });
+  }
   p.y = SEA - 26; p.vy = 0; G.mode = 'play'; show(null); hud();
 }
 
 function reachGate(e) {
   G.mode = 'gate'; G.speed = 0; input.up = input.down = false;
   ask(`Буй ${e.n + 1} из 2: черепаха-сторож открывает путь`, () => {
-    e.open = true; G.checkpoint = GATES[e.n]; G.gate = e.n + 1;
+    e.open = true; G.checkpoint = gates()[e.n] || 0; G.gate = e.n + 1;
     G.mode = 'play'; G.speed = G.base; G.force = 100;
-    say(e.n === 0 ? 'Верно! Плыви дальше, там китобои!' : 'Верно! Кит совсем близко!');
+    say(world.gateSay[e.n]);
   });
 }
 
 function enterFinal() {
   G.mode = 'final'; input.up = input.down = false; ents = [];
-  G.final = { phase: 'approach', t: 0, in: 0, knots: 3, shown: false, cup: 0 };
+  G.final = { phase: 'approach', t: 0, in: 0, knots: world.tasks, shown: false, cup: 0 };
 }
 
 function nextKnot() {
   const F = G.final;
-  ask(`Узел ${4 - F.knots} из 3: развяжи верёвку`, () => {
+  ask(`${world.taskName} ${world.tasks + 1 - F.knots} из ${world.tasks}: ${world.taskDo}`, () => {
     F.knots--;
-    const k = knotPoint(F.knots / 2.6 + .2);
+    const k = world.id === 'whale' ? knotPoint(F.knots / 2.6 + .2) : { x: goalPos().x, y: SEA - 90 };
     burst(k.x, k.y, 'spark', 16);
-    tone(300, .2, 'square', .05, 900);
+    if (world.id === 'pirate') { G.shake = 9; burst(k.x, k.y, 'bubble', 14); tone(120, .3, 'sawtooth', .08, 60); }
+    else tone(300, .2, 'square', .05, 900);
     if (F.knots) setTimeout(nextKnot, 800);
-    else { F.phase = 'free'; F.t = 0; fanfare(); say('Кит свободен!', 3); }
+    else { F.phase = 'free'; F.t = 0; fanfare(); say(world.freed, 3); }
   });
 }
 
 function showWin() {
   G.mode = 'win';
-  const allM = G.saved === 3, noMiss = G.misses === 0;
-  const stars = 1 + allM + noMiss;
-  $('winName').textContent = `Награждается ${heroName || 'Герой'}: ${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}`;
+  const n = WORLDS.indexOf(world), friends = world.mermaids.length, was = wins();
+  const second = friends ? G.saved === friends : G.pearls >= 15, noMiss = G.misses === 0;
+  const got = 1 + second + noMiss;
+  stars[n] = Math.max(stars[n] || 0, got); saveStars();
+  $('prizeName').textContent = world.prize;
+  $('winName').textContent = `Награждается ${heroName || hero.name}: ${'★'.repeat(got)}${'☆'.repeat(3 - got)}`;
   const items = [
-    [true, 'Кит спасён'],
-    [allM, `Русалки спасены: ${G.saved} из 3`],
+    [true, world.done],
+    [second, friends ? `Русалки спасены: ${G.saved} из ${friends}` : `Жемчуг: ${G.pearls} из 15`],
     [noMiss, noMiss ? 'Все задачи решены с первого раза' : `Ошибок в задачах: ${G.misses}`]
   ];
   const ul = $('checks'); ul.textContent = '';
@@ -492,11 +641,12 @@ function showWin() {
     const i = document.createElement('i'); i.textContent = ok ? '✓' : '·';
     li.append(i, text); ul.appendChild(li);
   });
-  let best = 0;
-  try { best = +localStorage.getItem('lgm-best') || 0; if (G.pearls > best) localStorage.setItem('lgm-best', G.pearls); } catch (e) {}
-  $('winNote').textContent = `Жемчуга собрано: ${G.pearls}.` + (G.pearls > best && best ? ' Новый рекорд!' : best > G.pearls ? ` Рекорд: ${best}.` : '');
+  const fresh2 = HEROES.find(h => h.after === wins() && wins() > was);
+  $('winNote').textContent = fresh2 ? `Новый герой: ${fresh2.name}!` : wins() === WORLDS.length ? 'Все моря пройдены! Попробуй собрать все звёзды.' : '';
+  const next = n + 1 < WORLDS.length;
+  $('nextBtn').hidden = !next;
   $('hud').hidden = true; show('win');
-  $('replayBtn').focus({ preventScroll: true });
+  (next ? $('nextBtn') : $('replayBtn')).focus({ preventScroll: true });
 }
 
 function setPause(on) {
@@ -512,20 +662,52 @@ function pearlArc(x, y0, n, rise) {
   for (let i = 0; i < n; i++) add({ k: 'pearl', x: x + i * 42, y: y0 - Math.sin(i / (n - 1) * Math.PI) * rise });
 }
 
-function spawn() {
-  const m = metres(), leg = legOf(m), x = ENTRY();
-  if (m > TOTAL - 90) return;
+const low = () => SEA + 70, high = () => H - 72;
+const MAKE = {
+  croc: (x) => { add({ k: 'croc', x, y: SEA + 4, a: Math.random() * 6 }); pearlArc(x - 90, SEA - 60, 5, 60); },
+  shark: (x, leg) => add({ k: 'shark', x, y: rnd(low(), high()), a: Math.random() * 6, extra: rnd(70, 130) + leg * 15 }),
+  orca: (x, leg) => add({ k: 'shark', orca: true, x, y: rnd(low(), high()), a: Math.random() * 6, extra: rnd(120, 170) + leg * 15 }),
+  pearls: (x) => pearlArc(x, Math.random() < .5 ? SEA - 90 : SEA + 95, 6, Math.random() < .5 ? 40 : -30),
+  leap: (x) => add({ k: 'leap', x, y: SEA + 8, st: 0, t: 0, apex: rnd(115, 180), rot: 0 }),
+  hook: (x) => add({ k: 'hook', x, y: rnd(90, SEA - 60), a: Math.random() * 6 }),
+  combo: (x) => { add({ k: 'croc', x, y: SEA + 4, a: 1 }); add({ k: 'shark', x: x + 40, y: rnd(low(), high()), a: 2, extra: 40 }); },
+  bolt: (x) => add({ k: 'bolt', x, st: 0, t: 0 }),
+  barrel: (x) => { add({ k: 'barrel', x, y: SEA - 8, a: 0 }); pearlArc(x - 90, SEA - 60, 5, 60); },
+  jelly: (x) => add({ k: 'jelly', x, y: rnd(low(), high()), a: Math.random() * 6 }),
+  berg: (x) => { add({ k: 'berg', x, y: SEA }); pearlArc(x - 70, SEA - 110, 4, 40); },
+  snow: (x) => add({ k: 'snow', x: x + 160, y: -30 }),
+  stal: (x) => add({ k: 'stal', x, y: 18, st: 0 }),
+  eel: (x, leg) => add({ k: 'eel', x, y0: rnd(low(), high()), y: 0, a: Math.random() * 6, extra: 50 + leg * 15 }),
+  puffer: (x) => add({ k: 'puffer', x, y: rnd(SEA + 40, high()), a: Math.random() * 6 }),
+  ball: (x) => add({ k: 'ball', x: x + 120, y: SEA - rnd(190, 240), vy: 0 }),
+  mine: (x) => { add({ k: 'mine', x, y: SEA - 4, a: Math.random() * 6 }); pearlArc(x - 90, SEA - 60, 5, 60); },
+  parrot: (x) => add({ k: 'parrot', x, y0: rnd(92, SEA - 74), y: 0, a: Math.random() * 6 })
+};
 
-  if (G.gate < GATES.length && m > GATES[G.gate] - (W + 150) / PX - 40) {
+function gateDue(m) {
+  if (G.gate >= 2) return false;
+  return world.goal === 'far' ? m > gates()[G.gate] - (W + 150) / PX - 40 : G.got / G.target >= (G.gate + 1) / 3;
+}
+
+function spawn() {
+  const m = metres(), leg = Math.min(G.gate, 2), x = ENTRY();
+  if (world.goal === 'far' && m > world.total - 90) return;
+
+  if (gateDue(m)) {
     if (!ents.some(e => e.k === 'gate')) add({ k: 'gate', x: x + 300, y: SEA, n: G.gate });
     G.spawnIn = 500; return;
   }
-  for (let i = 0; i < 3; i++) {
-    if (!G.spawnedM[i] && m >= MERMAIDS[i]) {
+  for (let i = 0; i < world.mermaids.length; i++) {
+    if (!G.spawnedM[i] && m >= world.mermaids[i]) {
       G.spawnedM[i] = true;
       add({ k: 'mermaid', i, x: x + 60, y: SEA + (H - SEA) * .55, a: 0, safe: false });
       G.spawnIn = 620; return;
     }
+  }
+  if (world.goal === 'collect' && G.got < G.target && m >= G.nextItem) {
+    G.nextItem = m + world.every;
+    add({ k: 'item', x: x + 60, y: [SEA - 120, SEA + 100, SEA - 26][G.placed++ % 3], a: 0 });
+    G.spawnIn = 460; return;
   }
   if (m >= G.nextShield) {
     G.nextShield = m + DIFF.shieldEvery[diff];
@@ -534,22 +716,11 @@ function spawn() {
     G.spawnIn = 340; return;
   }
 
-  const pool = [['croc', 3], ['shark', 3], ['pearls', 2], ['leap', 1 + leg], ['hook', leg * 2]];
-  if (leg === 2) pool.push(['combo', 2]);
-  let roll = Math.random() * pool.reduce((s, q) => s + q[1], 0), kind = 'croc';
+  const pool = world.pool(leg).filter(q => q[1] > 0);
+  let roll = Math.random() * pool.reduce((s, q) => s + q[1], 0), kind = pool[0][0];
   for (const [k, w] of pool) { roll -= w; if (roll <= 0) { kind = k; break; } }
-  const low = SEA + 70, high = H - 72;
-
-  if (kind === 'croc') { add({ k: 'croc', x, y: SEA + 4, a: Math.random() * 6 }); pearlArc(x - 90, SEA - 60, 5, 60); }
-  if (kind === 'shark') add({ k: 'shark', x, y: rnd(low, high), y0: 0, a: Math.random() * 6, extra: rnd(70, 130) + leg * 15 });
-  if (kind === 'pearls') pearlArc(x, Math.random() < .5 ? SEA - 90 : SEA + 95, 6, Math.random() < .5 ? 40 : -30);
-  if (kind === 'leap') add({ k: 'leap', x, y: SEA + 8, st: 0, t: 0, apex: rnd(115, 180), rot: 0 });
-  if (kind === 'hook') add({ k: 'hook', x, y: rnd(90, SEA - 60), a: Math.random() * 6 });
-  if (kind === 'combo') {
-    add({ k: 'croc', x, y: SEA + 4, a: 1 });
-    add({ k: 'shark', x: x + 40, y: rnd(low, high), a: 2, extra: 40 });
-  }
-  G.spawnIn = rnd(310, 470) * (1 - leg * .08) * DIFF.gap[diff];
+  MAKE[kind](x, leg);
+  G.spawnIn = rnd(310, 470) * (1 - leg * .08) * DIFF.gap[diff] * world.gap;
 }
 
 /* ---------- particles ---------- */
@@ -592,7 +763,7 @@ function updatePlayer(dt) {
   p.vy += a * dt; p.y = clamp(p.y + p.vy * dt, 60, H - 34);
 
   const air = p.y < SEA - 44, under = p.y > SEA + 4;
-  if (air) G.force -= 21 * dt; else if (under) G.force -= 15 * dt; else G.force += 34 * dt;
+  if (air) G.force -= 21 * hero.fly * dt; else if (under) G.force -= 15 * hero.dive * world.cold * dt; else G.force += 34 * hero.charge * dt;
   G.force = clamp(G.force, 0, 100);
   if (G.force <= 0 && !G.locked) { G.locked = true; say('Сила кончилась. Беги по воде, она вернётся!'); }
   if (G.locked && G.force > 30) G.locked = false;
@@ -609,6 +780,7 @@ function updateEnts(dt) {
     switch (e.k) {
       case 'pearl':
         e.x -= v * dt;
+        if (hero.magnet && near(e.x, e.y, 170)) { e.x += (p.x - e.x) * 7 * dt; e.y += (p.y - e.y) * 7 * dt; }
         if (near(e.x, e.y, 30)) { e.dead = true; G.pearls++; G.force = Math.min(100, G.force + 5); hud(); tone(1100 + (G.pearls % 5) * 90, .07, 'sine', .05); burst(e.x, e.y, 'spark', 3); }
         break;
       case 'shield':
@@ -628,7 +800,7 @@ function updateEnts(dt) {
         if (e.flee || song) { e.flee = true; e.x += 240 * dt; break; }
         e.x -= (v + e.extra) * dt;
         e.y += Math.sin(e.a * 2.4) * 34 * dt;
-        if (hitBox(e.x - 58, e.y - 14, e.x + 40, e.y + 14)) hurt('shark');
+        if (hitBox(e.x - 58, e.y - 14, e.x + 40, e.y + 14)) hurt(e.orca ? 'orca' : 'shark');
         break;
       case 'leap': {
         const ext = v + 90, dur = 1.35;
@@ -656,12 +828,77 @@ function updateEnts(dt) {
           e.sx = e.x + Math.cos(e.ang) * 96; e.sy = e.y + Math.sin(e.ang) * 66;
           e.face = -Math.sin(e.ang) > 0 ? 1 : 0;
           if (near(e.x, e.y, 36)) {
-            e.safe = true; G.saved++; G.rescued[e.i] = true; G.song = 7; G.hearts = Math.min(3, G.hearts + 1); hud();
+            e.safe = true; G.saved++; G.rescued[e.i] = true; G.song = 7; G.hearts = Math.min(G.max, G.hearts + 1); hud();
             burst(e.x, e.y, 'note', 14);
             [660, 784, 988, 1175].forEach((f, i) => tone(f, .28, 'sine', .07, 0, i * .14));
             say('Русалка спасена! Она поёт, и хищники убегают!', 3.2);
           } else if (!song && hitBox(e.sx - 42, e.sy - 13, e.sx + 42, e.sy + 13)) hurt('shark');
         }
+        break;
+      case 'item':
+        e.x -= v * dt;
+        if (near(e.x, e.y, 52)) {
+          e.dead = true; G.got += G.step; G.taken++; hud();
+          burst(e.x, e.y, 'spark', 16); tone(660, .12, 'triangle', .08); tone(880, .18, 'triangle', .08, 0, .1);
+          say(world.item === 'raft' ? `${G.taken} × ${G.step} = ${G.got} черепашат!` : `Ключ ${G.got} из ${G.target}!`);
+        }
+        break;
+      case 'bolt':
+        e.x -= v * dt;
+        if (e.st === 0 && e.x < p.x + v * 1.5) { e.st = 1; tone(90, .3, 'sawtooth', .03); }
+        if (e.st === 1 && e.x < p.x + 8) { e.st = 2; e.t = .32; G.flash = 1; G.shake = 5; burst(e.x, SEA, 'spray', 18); tone(70, .4, 'sawtooth', .09, 40); }
+        if (e.st === 2) {
+          e.t -= dt;
+          if (e.t <= 0) e.st = 3;
+          else if (hitBox(e.x - 26, 0, e.x + 26, SEA + 6, 14)) hurt('bolt');
+        }
+        break;
+      case 'barrel':
+        e.x -= (v + 30) * dt; e.y = SEA - 10 + Math.sin(e.a * 3) * 4;
+        if (hitBox(e.x - 28, e.y - 30, e.x + 28, e.y + 30)) hurt('barrel');
+        break;
+      case 'jelly':
+        e.x -= (v + 10) * dt; e.y += Math.sin(e.a * 1.7) * 90 * dt;
+        e.y = clamp(e.y, SEA + 40, H - 60);
+        if (near(e.x, e.y, 44)) hurt('jelly');
+        break;
+      case 'berg':
+        e.x -= v * dt;
+        if (hitBox(e.x - 50, SEA - 74, e.x + 50, SEA + 46)) hurt('berg');
+        break;
+      case 'snow':
+        e.x -= (v + 70) * dt; e.y += 215 * dt;
+        if (e.y > SEA) { e.dead = true; burst(e.x, SEA, 'spray', 8); }
+        else if (near(e.x, e.y, 36)) hurt('snow');
+        break;
+      case 'stal':
+        e.x -= v * dt;
+        if (e.st === 0 && e.x < p.x + v * 1.05) e.st = 1;
+        if (e.st === 1) e.y += 330 * dt;
+        if (e.y > SEA) { e.dead = true; burst(e.x, SEA, 'spray', 10); }
+        else if (hitBox(e.x - 11, e.y - 30, e.x + 11, e.y + 22, 16)) hurt('stal');
+        break;
+      case 'eel':
+        e.x -= (v + e.extra) * dt; e.y = e.y0 + Math.sin(e.a * 2.2) * 34;
+        if (hitBox(e.x - 44, e.y - 12, e.x + 44, e.y + 12, 16)) hurt('eel');
+        break;
+      case 'puffer':
+        e.x -= v * dt; e.r = 19 + (Math.sin(e.a * 2) + 1) * 11;
+        if (near(e.x, e.y, e.r + 14)) hurt('puffer');
+        break;
+      case 'ball':
+        e.x -= (v + 130) * dt; e.vy += 240 * dt; e.y += e.vy * dt;
+        if (Math.random() < .4) puff(e.x + 16, e.y, 'smoke', 60, -20, 5);
+        if (e.y > SEA) { e.dead = true; burst(e.x, SEA, 'spray', 14); tone(110, .15, 'sine', .05); }
+        else if (near(e.x, e.y, 36)) hurt('ball');
+        break;
+      case 'mine':
+        e.x -= v * dt; e.y = SEA - 4 + Math.sin(e.a * 2.4) * 5;
+        if (near(e.x, e.y, 46)) { e.dead = true; G.shake = 7; burst(e.x, e.y, 'spark', 24); hurt('mine'); }
+        break;
+      case 'parrot':
+        e.x -= (v + 80) * dt; e.y = e.y0 + Math.sin(e.a * 3) * 22;
+        if (hitBox(e.x - 22, e.y - 14, e.x + 22, e.y + 14, 15)) hurt('parrot');
         break;
       case 'gate':
         e.x -= v * dt;
@@ -684,6 +921,7 @@ function update(dt) {
   }
   parts = parts.filter(q => q.l > 0);
   G.shake = Math.max(0, G.shake - 26 * dt);
+  G.flash = Math.max(0, G.flash - 3.4 * dt);
 
   if (G.mode === 'menu') { G.dist += 90 * dt; return; }
   if (G.mode === 'final' || G.mode === 'win') { updateFinal(dt); return; }
@@ -700,10 +938,10 @@ function update(dt) {
   if (G.song > 0 && Math.random() < .25) puff(p.x - 60 + rnd(-30, 30), p.y - 10 + rnd(-30, 30), 'note', 0, -50, 4);
 
   const m = metres();
-  $('me').style.left = (m / TOTAL * 100).toFixed(2) + '%';
-  $('left').textContent = Math.max(0, Math.ceil((TOTAL - m) / 10) * 10) + ' м';
+  $('me').style.left = (progress() * 100).toFixed(2) + '%';
+  $('left').textContent = world.goal === 'far' ? Math.max(0, Math.ceil((world.total - m) / 10) * 10) + ' м' : `${G.got} из ${G.target}`;
   const f = $('force'); f.style.width = G.force.toFixed(0) + '%'; f.classList.toggle('low', G.locked || G.force < 25);
-  if (m >= TOTAL) enterFinal();
+  if (world.goal === 'far' ? m >= world.total : G.got >= G.target && G.gate >= 2) enterFinal();
 }
 
 function updateFinal(dt) {
@@ -714,15 +952,15 @@ function updateFinal(dt) {
   F.in = Math.min(1, F.in + dt / 1.8);
   p.vy += ((SEA - 26 - p.y) * 20 - p.vy * 8.5) * dt; p.y += p.vy * dt;
   if (F.phase === 'approach' && F.in >= 1) { F.phase = 'knots'; nextKnot(); }
+  const whale = world.id === 'whale';
   if (F.phase === 'free') {
-    const w = whalePos();
-    if (Math.random() < .7) puff(w.x - 30 * w.s, w.y - 95 * w.s, 'spout', rnd(-40, 40), -rnd(120, 300), 5);
-    if (F.t > 3.2) { F.phase = 'prize'; F.t = 0; tone(392, .5, 'triangle', .08, 784); }
+    if (whale) { const w = whalePos(); if (Math.random() < .7) puff(w.x - 30 * w.s, w.y - 95 * w.s, 'spout', rnd(-40, 40), -rnd(120, 300), 5); }
+    else if (Math.random() < .3) { const g = goalPos(); puff(g.x + rnd(-120, 120), SEA - rnd(40, 200), 'spark', rnd(-40, 40), -rnd(30, 90), 4); }
+    if (F.t > (whale ? 3.2 : 2.2)) { F.phase = 'prize'; F.t = 0; tone(392, .5, 'triangle', .08, 784); }
   }
   if (F.phase === 'prize') {
     F.cup = Math.min(1, F.t / 1.5);
-    const w = whalePos();
-    if (Math.random() < .9) puff(w.x - 30 * w.s + rnd(-14, 14), w.y - 90 * w.s, 'spout', rnd(-30, 30), -rnd(200, 330), 5);
+    if (whale) { const w = whalePos(); if (Math.random() < .9) puff(w.x - 30 * w.s + rnd(-14, 14), w.y - 90 * w.s, 'spout', rnd(-30, 30), -rnd(200, 330), 5); }
     if (F.t > 1.6 && !F.shown) { F.shown = true; show('claim'); $('claimBtn').focus({ preventScroll: true }); }
   }
 }
@@ -731,10 +969,10 @@ function updateFinal(dt) {
 function ink(lw = 3) { c.strokeStyle = INK; c.lineWidth = lw; c.lineJoin = 'round'; c.lineCap = 'round'; c.stroke(); }
 function fillInk(col, lw) { c.fillStyle = col; c.fill(); ink(lw); }
 function circle(x, y, r) { c.beginPath(); c.arc(x, y, r, 0, 6.2832); }
-const waveY = x => SEA + Math.sin((x + G.dist) * .02 + T * 2) * 3.5 + Math.sin((x + G.dist) * .047 - T * 1.6) * 2;
+const waveY = x => SEA + (Math.sin((x + G.dist) * .02 + T * 2) * 3.5 + Math.sin((x + G.dist) * .047 - T * 1.6) * 2) * world.wave;
 
 function drawCloud(x, y, s) {
-  c.fillStyle = 'rgba(253,248,228,.92)';
+  c.fillStyle = world.cloud;
   c.beginPath();
   c.arc(x, y, 26 * s, Math.PI, 0); c.arc(x + 34 * s, y, 36 * s, Math.PI, 0); c.arc(x + 76 * s, y, 22 * s, Math.PI, 0);
   c.closePath(); c.fill();
@@ -759,12 +997,13 @@ function drawWhaler(x, y, s, wave) {
   c.restore();
 }
 
-function drawShark(x, y, s, flip, rot = 0) {
+function drawShark(x, y, s, flip, rot = 0, orca = false) {
   c.save(); c.translate(x, y); c.rotate(rot); c.scale(flip ? -s : s, s);
-  c.beginPath(); c.moveTo(-6, -16); c.lineTo(12, -42); c.lineTo(24, -12); c.closePath(); fillInk('#57788e');
+  c.beginPath(); c.moveTo(-6, -16); c.lineTo(12, -42); c.lineTo(24, -12); c.closePath(); fillInk(orca ? '#14202e' : '#57788e');
   c.beginPath();
   c.moveTo(-64, 0); c.quadraticCurveTo(-22, -28, 36, -9); c.lineTo(68, -26); c.lineTo(58, 0); c.lineTo(68, 22); c.lineTo(36, 9); c.quadraticCurveTo(-22, 25, -64, 0);
-  c.closePath(); fillInk('#6f92a8');
+  c.closePath(); fillInk(orca ? '#1f2e40' : '#6f92a8');
+  if (orca) { c.beginPath(); c.ellipse(-36, -6, 10, 6, 0, 0, 6.3); c.fillStyle = FOAM; c.fill(); }
   c.beginPath(); c.moveTo(-58, 2); c.quadraticCurveTo(-20, 21, 28, 8); c.quadraticCurveTo(-20, 8, -58, 2); c.fillStyle = '#dcecec'; c.fill();
   circle(-38, -7, 4); c.fillStyle = FOAM; c.fill(); ink(2); circle(-39, -7, 1.6); c.fillStyle = INK; c.fill();
   c.beginPath(); c.moveTo(-54, 5); c.lineTo(-22, 8); c.lineTo(-30, 13); c.closePath(); c.fillStyle = INK; c.fill();
@@ -856,57 +1095,311 @@ function drawCup(x, y, s) {
   c.restore();
 }
 
+function drawHead(h, moving) {
+  const under = p.y > SEA + 4 && moving;
+  if (h.id === 'robot') {
+    c.beginPath(); c.moveTo(2, -40); c.lineTo(2, -50); ink(3); circle(2, -52, 3.5); fillInk(CORAL, 2);
+    c.beginPath(); c.roundRect(-11, -40, 26, 24, 5); fillInk(h.skin);
+    c.beginPath(); c.roundRect(-6, -35, 18, 9, 3); fillInk('#0f3f55', 2);
+    circle(8, -30.5, 2.2); c.fillStyle = MINT; c.fill();
+    c.beginPath(); c.moveTo(-3, -21); c.lineTo(10, -21); ink(2);
+    return;
+  }
+  if (h.id === 'penguin') {
+    circle(2, -27, 14); fillInk(h.skin);
+    circle(4, -25, 9); c.fillStyle = FOAM; c.fill();
+    circle(8, -29, 2); c.fillStyle = INK; c.fill();
+    c.beginPath(); c.moveTo(12, -26); c.lineTo(24, -23); c.lineTo(12, -19); c.closePath(); fillInk('#f29a2e', 2.5);
+    return;
+  }
+  if (h.id === 'cat') {
+    c.beginPath(); c.moveTo(-11, -34); c.lineTo(-12, -49); c.lineTo(-1, -40); c.lineTo(5, -40); c.lineTo(15, -49); c.lineTo(15, -34); c.closePath(); fillInk(h.skin);
+    circle(2, -27, 13.5); fillInk(h.skin);
+    c.beginPath(); c.moveTo(-11, -34); c.quadraticCurveTo(2, -44, 15, -34); c.lineTo(15, -31); c.quadraticCurveTo(2, -37, -11, -31); c.closePath(); fillInk(CORAL, 2.5);
+    circle(8, -27, 2); c.fillStyle = INK; c.fill();
+    c.beginPath(); c.moveTo(12, -23); c.lineTo(9, -21); c.lineTo(12, -19); c.fillStyle = '#e2487f'; c.fill();
+    c.beginPath(); c.moveTo(6, -21); c.lineTo(-4, -23); c.moveTo(6, -19); c.lineTo(-4, -17); ink(1.5);
+    return;
+  }
+  if (h.id === 'dragon') {
+    c.fillStyle = h.cape;
+    for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(-14 + i * 8, -35 + i * -3); c.lineTo(-11 + i * 8, -47 + i * -1); c.lineTo(-6 + i * 8, -38 - i * 2); c.fill(); }
+    c.beginPath(); c.roundRect(-11, -40, 26, 26, 11); fillInk(h.skin);
+    c.beginPath(); c.roundRect(5, -30, 19, 15, 7); fillInk(h.skin);
+    circle(7, -33, 3); fillInk(FOAM, 2); circle(8, -33, 1.2); c.fillStyle = INK; c.fill();
+    circle(19, -25, 1.3); c.fill();
+    return;
+  }
+  circle(2, -27, 13); fillInk(h.skin);
+  if (h.id === 'diver') {
+    c.beginPath(); c.moveTo(-10, -32); c.quadraticCurveTo(-30, -30, -26, -10); c.quadraticCurveTo(-17, -20, -10, -22); c.closePath(); fillInk(h.hair);
+  }
+  c.beginPath(); c.arc(0, -30, 14, Math.PI * .95, Math.PI * 2.05); c.quadraticCurveTo(4, -34, -13, -24); c.closePath(); fillInk(h.hair);
+  circle(8, -27, 2); c.fillStyle = INK; c.fill();
+  c.beginPath(); c.arc(7, -22, 3.4, .2, 2.6); ink(2);
+  if (under || h.id === 'diver') { c.beginPath(); c.rect(1, -32, 14, 9); c.fillStyle = 'rgba(95,203,226,.55)'; c.fill(); ink(2.5); }
+}
+
 function drawHero(x, y, t, moving) {
-  const air = y < SEA - 44, under = y > SEA + 4;
+  const h = hero, air = y < SEA - 44, under = y > SEA + 4;
   const rot = clamp(p.vy / 900, -.4, .4) + (under ? .2 : 0);
   c.save(); c.translate(x, y); c.rotate(rot); c.scale(1.2, 1.2);
   const k = moving ? Math.sin(t * 16) : 0;
 
-  c.beginPath(); c.moveTo(-8, -14); c.quadraticCurveTo(-34 - k * 3, -4, -38, 16 + k * 4); c.lineTo(-10, 8); c.closePath(); fillInk(CORAL);
+  if (h.id === 'dragon') {
+    const flap = air ? Math.sin(t * 14) * 8 : 0;
+    c.beginPath(); c.moveTo(-8, -12); c.lineTo(-36, -30 - flap); c.lineTo(-30, -12 - flap / 2); c.lineTo(-40, -6); c.lineTo(-10, 6); c.closePath(); fillInk(h.cape);
+    c.beginPath(); c.moveTo(-9, 6); c.quadraticCurveTo(-26, 12, -32, 2); c.lineTo(-10, -2); c.closePath(); fillInk(h.suit);
+  } else if (h.cape) {
+    c.beginPath(); c.moveTo(-8, -14); c.quadraticCurveTo(-34 - k * 3, -4, -38, 16 + k * 4); c.lineTo(-10, 8); c.closePath(); fillInk(h.cape);
+  }
 
   const leg = (dir, sw) => {
     const fx = sw * 15, fy = 20 - Math.abs(sw) * 3 + (dir ? 0 : 1);
     c.beginPath(); c.moveTo(0, 6); c.lineTo(fx, fy); ink(8);
-    c.beginPath(); c.moveTo(0, 6); c.lineTo(fx, fy); c.strokeStyle = '#2c5e8a'; c.lineWidth = 4; c.stroke();
+    c.beginPath(); c.moveTo(0, 6); c.lineTo(fx, fy); c.strokeStyle = h.id === 'robot' ? '#6f8794' : h.id === 'runner' || h.id === 'diver' ? '#2c5e8a' : h.suit; c.lineWidth = 4; c.stroke();
     c.save(); c.translate(fx, fy + 2);
     c.beginPath(); c.moveTo(-8, -5); c.lineTo(5, -5); c.lineTo(13, 3); c.lineTo(13, 7); c.lineTo(-8, 7); c.closePath(); fillInk(boots);
     c.beginPath(); c.moveTo(-7, -3); c.quadraticCurveTo(-20, -10, -21, 3); c.quadraticCurveTo(-13, 0, -7, 2); c.closePath(); fillInk(FOAM, 2.5);
     c.restore();
   };
   leg(0, -k * (air ? .3 : 1));
-  c.beginPath(); c.rect(-10, -15, 20, 24); fillInk(SUN);
+  c.beginPath(); c.rect(-10, -15, 20, 24); fillInk(h.suit);
+  if (h.id === 'penguin') { c.beginPath(); c.ellipse(2, -3, 7, 10, 0, 0, 6.3); c.fillStyle = FOAM; c.fill(); }
+  if (h.id === 'robot') { c.beginPath(); c.rect(-5, -9, 12, 8); fillInk('#0f3f55', 2); }
   leg(1, k * (air ? .3 : 1));
 
   c.beginPath(); c.moveTo(4, -9); c.lineTo(17, air ? -22 : -2 + k * 4); ink(7);
-  c.beginPath(); c.moveTo(4, -9); c.lineTo(17, air ? -22 : -2 + k * 4); c.strokeStyle = '#f1c49c'; c.lineWidth = 3.5; c.stroke();
+  c.beginPath(); c.moveTo(4, -9); c.lineTo(17, air ? -22 : -2 + k * 4); c.strokeStyle = h.skin; c.lineWidth = 3.5; c.stroke();
 
-  circle(2, -27, 13); fillInk('#f1c49c');
-  c.beginPath(); c.arc(0, -30, 14, Math.PI * .95, Math.PI * 2.05); c.quadraticCurveTo(4, -34, -13, -24); c.closePath(); fillInk('#54311f');
-  circle(8, -27, 2); c.fillStyle = INK; c.fill();
-  c.beginPath(); c.arc(7, -22, 3.4, .2, 2.6); ink(2);
-  if (under) {
-    c.beginPath(); c.rect(1, -32, 14, 9); c.fillStyle = 'rgba(95,203,226,.55)'; c.fill(); ink(2.5);
+  drawHead(h, moving);
+  c.restore();
+}
+
+/* ---------- hazards of the other seas ---------- */
+function drawBolt(e) {
+  c.beginPath(); c.ellipse(e.x, 26, 62, 24, 0, 0, 6.3); c.fillStyle = 'rgba(30,40,62,.95)'; c.fill();
+  if (e.st === 1 && Math.floor(T * 9) % 2) {
+    c.beginPath(); c.moveTo(e.x, 50); c.lineTo(e.x, SEA); c.strokeStyle = SUN; c.lineWidth = 4; c.setLineDash([14, 14]); c.stroke(); c.setLineDash([]);
+    bubble(e.x, 96, 'Ныряй!');
+  }
+  if (e.st === 2) {
+    c.beginPath(); c.moveTo(e.x - 8, 40);
+    for (let y = 40, s = 1; y < SEA; y += 34, s = -s) c.lineTo(e.x + s * 16, y + 34);
+    c.strokeStyle = INK; c.lineWidth = 15; c.stroke(); c.strokeStyle = SUN; c.lineWidth = 8; c.stroke();
+  }
+}
+
+function drawBarrel(e) {
+  c.save(); c.translate(e.x, e.y); c.rotate(Math.sin(e.a * 2) * .22);
+  c.beginPath(); c.roundRect(-24, -28, 48, 56, 12); fillInk('#9a6236', 4);
+  c.beginPath(); c.moveTo(-24, -12); c.lineTo(24, -12); c.moveTo(-24, 12); c.lineTo(24, 12); ink(4);
+  c.fillStyle = FOAM; c.font = '900 20px Nunito, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('!', 0, 1);
+  c.restore();
+}
+
+function drawJelly(e) {
+  c.save(); c.translate(e.x, e.y);
+  for (let i = -2; i <= 2; i++) {
+    c.beginPath(); c.moveTo(i * 10, 12); c.quadraticCurveTo(i * 10 + Math.sin(e.a * 4 + i) * 10, 32, i * 11, 48);
+    c.strokeStyle = '#ffd24a'; c.lineWidth = 3.5; c.lineCap = 'round'; c.stroke();
+  }
+  c.beginPath(); c.arc(0, 8, 30, Math.PI, 0); c.closePath(); fillInk('#f28ad6', 4);
+  circle(-10, -2, 2.5); c.fillStyle = INK; c.fill(); circle(10, -2, 2.5); c.fill();
+  c.restore();
+}
+
+function drawBerg(e) {
+  c.beginPath(); c.moveTo(e.x - 60, SEA + 6); c.lineTo(e.x - 34, SEA - 52); c.lineTo(e.x - 12, SEA - 40); c.lineTo(e.x + 8, SEA - 84); c.lineTo(e.x + 34, SEA - 40); c.lineTo(e.x + 60, SEA + 6); c.closePath(); fillInk('#e9f8fd', 4);
+  c.beginPath(); c.moveTo(e.x + 8, SEA - 84); c.lineTo(e.x + 34, SEA - 40); c.lineTo(e.x + 60, SEA + 6); c.lineTo(e.x + 8, SEA + 6); c.closePath(); c.fillStyle = 'rgba(120,190,220,.5)'; c.fill();
+  c.beginPath(); c.moveTo(e.x - 56, SEA + 4); c.lineTo(e.x - 34, SEA + 50); c.lineTo(e.x + 30, SEA + 56); c.lineTo(e.x + 56, SEA + 4); c.closePath(); c.fillStyle = 'rgba(190,232,245,.55)'; c.fill(); ink(3);
+}
+
+function drawSnow(e) {
+  circle(e.x, e.y, 18); fillInk('#fff', 3.5);
+  circle(e.x - 5, e.y - 5, 4); c.fillStyle = '#cfe6f2'; c.fill();
+}
+
+function drawStal(e) {
+  c.beginPath(); c.moveTo(e.x - 18, e.y - 34); c.lineTo(e.x + 18, e.y - 34); c.lineTo(e.x, e.y + 30); c.closePath(); fillInk('#7d8ba0', 4);
+  if (e.st === 0) { c.beginPath(); c.moveTo(e.x, 0); c.lineTo(e.x, e.y - 34); ink(3); }
+}
+
+function drawEel(e) {
+  c.beginPath();
+  for (let i = 0; i <= 10; i++) { const x = e.x - 48 + i * 10, y = e.y + Math.sin(e.a * 9 + i * .9) * 9; i ? c.lineTo(x, y) : c.moveTo(x, y); }
+  c.strokeStyle = INK; c.lineWidth = 20; c.lineCap = 'round'; c.stroke(); c.strokeStyle = '#7fd14d'; c.lineWidth = 13; c.stroke();
+  const y = e.y + Math.sin(e.a * 9) * 9;
+  circle(e.x - 44, y - 4, 4); c.fillStyle = FOAM; c.fill(); ink(2);
+  if (Math.floor(T * 8) % 2) { c.beginPath(); c.moveTo(e.x, y - 18); c.lineTo(e.x + 8, y - 26); c.lineTo(e.x + 2, y - 26); c.lineTo(e.x + 10, y - 36); c.strokeStyle = SUN; c.lineWidth = 3; c.stroke(); }
+}
+
+function drawPuffer(e) {
+  const r = e.r || 20;
+  c.fillStyle = INK;
+  for (let i = 0; i < 12; i++) { const a = i / 12 * 6.28; c.beginPath(); c.moveTo(e.x + Math.cos(a - .15) * r, e.y + Math.sin(a - .15) * r); c.lineTo(e.x + Math.cos(a) * (r + 10), e.y + Math.sin(a) * (r + 10)); c.lineTo(e.x + Math.cos(a + .15) * r, e.y + Math.sin(a + .15) * r); c.fill(); }
+  circle(e.x, e.y, r); fillInk('#f5c542', 3.5);
+  circle(e.x - r * .45, e.y - r * .2, 4); c.fillStyle = FOAM; c.fill(); ink(2);
+  circle(e.x - r * .75, e.y + r * .2, 3); c.fillStyle = INK; c.fill();
+}
+
+function drawBall(e) {
+  circle(e.x, e.y, 17); fillInk('#26303c', 3.5);
+  circle(e.x - 5, e.y - 5, 4); c.fillStyle = '#6f8090'; c.fill();
+}
+
+function drawMine(e) {
+  c.strokeStyle = INK; c.lineWidth = 5; c.lineCap = 'round';
+  for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28; c.beginPath(); c.moveTo(e.x, e.y); c.lineTo(e.x + Math.cos(a) * 36, e.y + Math.sin(a) * 36); c.stroke(); }
+  circle(e.x, e.y, 27); fillInk('#3a4656', 4);
+  circle(e.x, e.y, 8); c.fillStyle = Math.floor(T * 5) % 2 ? CORAL : '#7a2a1c'; c.fill();
+}
+
+function drawParrot(e) {
+  const f = Math.sin(e.a * 16) * 12;
+  c.save(); c.translate(e.x, e.y);
+  c.beginPath(); c.moveTo(16, 2); c.lineTo(42, 12); c.lineTo(36, -2); c.closePath(); fillInk('#2f6fb0', 3);
+  c.beginPath(); c.ellipse(0, 0, 21, 13, 0, 0, 6.3); fillInk('#e23b3b', 3.5);
+  c.beginPath(); c.moveTo(-2, -4); c.lineTo(12, -22 + f); c.lineTo(18, -2); c.closePath(); fillInk(SUN, 3);
+  circle(-15, -9, 10); fillInk('#e23b3b', 3);
+  c.beginPath(); c.moveTo(-23, -11); c.quadraticCurveTo(-33, -8, -25, -1); c.lineTo(-19, -6); c.closePath(); fillInk(FOAM, 2.5);
+  circle(-16, -11, 2); c.fillStyle = INK; c.fill();
+  c.restore();
+}
+
+function drawTurtle(x, y, s) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  circle(-13, -2, 5.5); fillInk('#8fd18a', 2.5);
+  c.beginPath(); c.ellipse(1, 0, 12, 9, 0, 0, 6.3); fillInk('#3f9b5c', 3);
+  circle(-14, -3, 1.2); c.fillStyle = INK; c.fill();
+  c.restore();
+}
+
+function drawItem(e) {
+  const y = e.y + Math.sin(e.a * 2.5) * 6;
+  if (world.item === 'key') {
+    circle(e.x, y, 34); c.fillStyle = 'rgba(255,201,51,.3)'; c.fill();
+    c.save(); c.translate(e.x, y); c.rotate(Math.sin(e.a * 2) * .3 - .6);
+    circle(0, -15, 12); fillInk(SUN, 4); circle(0, -15, 4); c.fillStyle = FOAM; c.fill(); ink(2);
+    c.beginPath(); c.rect(-3.5, -3, 7, 32); fillInk(SUN, 3.5);
+    c.beginPath(); c.rect(3, 15, 9, 5); fillInk(SUN, 2.5); c.beginPath(); c.rect(3, 23, 7, 5); fillInk(SUN, 2.5);
+    c.restore();
+    return;
+  }
+  const rows = G.step > 5 ? 2 : 1, cols = Math.ceil(G.step / rows), wide = Math.max(70, cols * 25 + 20);
+  c.beginPath(); c.roundRect(e.x - wide / 2, y + 2, wide, 16, 5); fillInk('#b9804a', 3.5);
+  for (let i = 0; i < G.step; i++) {
+    const col = i % cols, row = Math.floor(i / cols);
+    drawTurtle(e.x - (cols - 1) * 12.5 + col * 25, y - 7 - row * 18, .82);
+  }
+}
+
+/* ---------- far marks and level goals ---------- */
+function drawGoal(x, y, s, left, done) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  if (world.id === 'storm') {
+    c.beginPath(); c.moveTo(-90, 8); c.quadraticCurveTo(-60, -26, 0, -26); c.quadraticCurveTo(60, -26, 90, 8); c.closePath(); fillInk('#5e6d72', 4);
+    c.beginPath(); c.moveTo(-34, -24); c.lineTo(-22, -220); c.lineTo(22, -220); c.lineTo(34, -24); c.closePath(); fillInk(FOAM, 4);
+    c.fillStyle = CORAL;
+    for (let i = 0; i < 3; i++) { const a = -66 - i * 62, b = a - 30, wa = 33 - (i * 62 + 42) * .06, wb = 33 - (i * 62 + 72) * .06; c.beginPath(); c.moveTo(-wa, a); c.lineTo(wa, a); c.lineTo(wb, b); c.lineTo(-wb, b); c.closePath(); c.fill(); }
+    c.beginPath(); c.rect(-22, -220, 44, 8); fillInk(INK, 2);
+    c.beginPath(); c.rect(-16, -256, 32, 36); fillInk(left ? '#26374a' : SUN, 4);
+    for (let i = 0; i < world.tasks; i++) { circle(-9 + i * 9, -238, 3.4); c.fillStyle = i < world.tasks - left ? SUN : '#55687a'; c.fill(); }
+    c.beginPath(); c.moveTo(-20, -256); c.lineTo(0, -282); c.lineTo(20, -256); c.closePath(); fillInk(CORAL, 4);
+    if (done) { c.beginPath(); c.moveTo(0, -238); c.lineTo(-340, -310); c.lineTo(-340, -170); c.closePath(); c.fillStyle = 'rgba(255,226,120,.45)'; c.fill(); drawTurtle(-60, -32, 1); drawTurtle(44, -32, 1); drawTurtle(-20, -34, .9); }
+  }
+  if (world.id === 'ice') {
+    c.beginPath(); c.moveTo(-130, 8); c.lineTo(-112, -22); c.lineTo(112, -22); c.lineTo(130, 8); c.closePath(); fillInk('#eef8fc', 4);
+    for (let i = 0; i < 3; i++) {
+      const px = -48 + i * 48, py = -46 + (done ? Math.abs(Math.sin(T * 6 + i)) * -22 : 0);
+      c.beginPath(); c.ellipse(px, py, 14, 22, 0, 0, 6.3); fillInk('#22354a', 3);
+      c.beginPath(); c.ellipse(px - 2, py + 4, 8, 14, 0, 0, 6.3); c.fillStyle = FOAM; c.fill();
+      circle(px - 6, py - 12, 1.8); c.fillStyle = FOAM; c.fill();
+      c.beginPath(); c.moveTo(px - 12, py - 9); c.lineTo(px - 21, py - 6); c.lineTo(px - 12, py - 3); c.closePath(); fillInk('#f29a2e', 2);
+    }
+    if (!done) {
+      c.beginPath(); c.rect(-84, -128, 168, 106); ink(5);
+      for (let i = 1; i < 6; i++) { c.beginPath(); c.moveTo(-84 + i * 28, -128); c.lineTo(-84 + i * 28, -22); ink(5); }
+      for (let i = 0; i < left; i++) { c.beginPath(); c.roundRect(-44 + i * 34, -88, 22, 20, 4); fillInk(SUN, 3); }
+    }
+  }
+  if (world.id === 'cave') {
+    c.beginPath(); c.moveTo(-160, 10); c.lineTo(-138, -210); c.quadraticCurveTo(0, -300, 138, -210); c.lineTo(160, 10); c.closePath(); fillInk('#34465c', 5);
+    c.beginPath(); c.moveTo(-96, 10); c.lineTo(-84, -160); c.quadraticCurveTo(0, -226, 84, -160); c.lineTo(96, 10); c.closePath(); fillInk('#fff3bd', 4);
+    for (let i = 0; i < left; i++) for (let j = 0; j < 3; j++) { circle(-60 + j * 60 + (i % 2) * 22, -10 - i * 44, 28); fillInk('#6b7a8e', 4); }
+  }
+  if (world.id === 'pirate') {
+    if (done) c.rotate(.22);
+    c.scale(1.35, 1.35);
+    c.beginPath(); c.moveTo(-104, -34); c.lineTo(92, -44); c.lineTo(66, 16); c.lineTo(-76, 16); c.closePath(); fillInk('#3d2a26', 4);
+    c.beginPath(); c.rect(-90, -36, 170, 5); c.fillStyle = SUN; c.fill();
+    for (let i = 0; i < 4; i++) { circle(-72 + i * 40, -14, 8); fillInk('#26303c', 3); }
+    c.beginPath(); c.moveTo(8, -44); c.lineTo(8, -188); ink(6);
+    c.beginPath(); c.moveTo(-58, -160); c.quadraticCurveTo(-20, -118, -58, -70); c.lineTo(8, -70); c.lineTo(8, -160); c.closePath(); fillInk(FOAM, 3.5);
+    c.beginPath(); c.moveTo(8, -186); c.lineTo(-40, -176); c.lineTo(8, -164); c.closePath(); fillInk(INK, 3);
+    circle(-12, -176, 4); c.fillStyle = FOAM; c.fill();
+    for (let i = 0; i < world.tasks; i++) { circle(-60 + i * 25, -56, 7); c.fillStyle = i < left ? MINT : CORAL; c.fill(); ink(2.5); }
   }
   c.restore();
+}
+
+function drawCaveDark() {
+  const x = p.x + 130, g = c.createRadialGradient(x, p.y, 110, x, p.y, W * .66);
+  g.addColorStop(0, 'rgba(3,10,25,0)'); g.addColorStop(1, 'rgba(3,10,25,.9)');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+}
+
+function drawTentacles() {
+  const reach = (G.max - G.hearts) / G.max;
+  for (let i = 0; i < 4; i++) {
+    const y0 = H * (.1 + i * .27), len = 44 + reach * 120 + Math.sin(T * 2.4 + i) * 12;
+    c.beginPath(); c.moveTo(-14, y0 - 20); c.quadraticCurveTo(len * .6, y0 + Math.sin(T * 3 + i) * 26, len, y0 + Math.cos(T * 2 + i) * 14); c.quadraticCurveTo(len * .4, y0 + 34, -14, y0 + 26); c.closePath(); fillInk('#b2449a', 4);
+    for (let j = 1; j < 4; j++) { circle(len * j / 4.5, y0 + 5, 4); c.fillStyle = '#ea9bd8'; c.fill(); }
+  }
+}
+
+function drawWeather() {
+  if (world.id === 'storm') {
+    c.strokeStyle = 'rgba(214,232,245,.55)'; c.lineWidth = 2; c.beginPath();
+    for (let i = 0; i < 70; i++) { const x = ((i * 137 - T * 640) % (W + 40) + W + 40) % (W + 40), y = ((i * 89 + T * 900) % (H + 40)); c.moveTo(x, y); c.lineTo(x - 9, y + 22); }
+    c.stroke();
+  }
+  if (world.id === 'ice') {
+    c.fillStyle = 'rgba(255,255,255,.9)';
+    for (let i = 0; i < 46; i++) { const x = ((i * 151 - T * 150 + Math.sin(T + i) * 16) % (W + 20) + W + 20) % (W + 20), y = ((i * 97 + T * 80) % SEA); circle(x, y, 2 + i % 3); c.fill(); }
+  }
+  if (world.id === 'pirate') {
+    c.fillStyle = 'rgba(255,190,110,.7)';
+    for (let i = 0; i < 18; i++) { const x = ((i * 211 - T * 90) % (W + 20) + W + 20) % (W + 20), y = SEA - ((i * 67 + T * 44) % SEA); circle(x, y, 1.6); c.fill(); }
+  }
 }
 
 /* ---------- scene ---------- */
 function drawBackdrop() {
   c.fillStyle = skyG; c.fillRect(0, 0, W, SEA + 8);
   const sx = W * .78, sy = SEA * .3;
-  c.save(); c.translate(sx, sy); c.rotate(T * .05); c.fillStyle = '#ffe28a';
-  for (let i = 0; i < 12; i++) { c.rotate(Math.PI / 6); c.beginPath(); c.moveTo(0, -46); c.lineTo(8, -70); c.lineTo(-8, -70); c.closePath(); c.fill(); }
-  c.restore();
-  circle(sx, sy, 38); c.fillStyle = SUN; c.fill();
+  if (world.sun) {
+    c.save(); c.translate(sx, sy); c.rotate(T * .05); c.fillStyle = world.id === 'whale' ? '#ffe28a' : world.sun;
+    for (let i = 0; i < 12; i++) { c.rotate(Math.PI / 6); c.beginPath(); c.moveTo(0, -46); c.lineTo(8, -70); c.lineTo(-8, -70); c.closePath(); c.fill(); }
+    c.restore();
+    circle(sx, sy, 38); c.fillStyle = world.sun; c.fill();
+  }
+  if (world.id === 'pirate') {
+    const x = W * .36 - (G.dist * .02) % 60;
+    c.beginPath(); c.moveTo(x - 190, SEA + 2); c.lineTo(x - 34, SEA - 118); c.lineTo(x + 34, SEA - 118); c.lineTo(x + 190, SEA + 2); c.closePath(); c.fillStyle = '#6b3d33'; c.fill();
+    c.beginPath(); c.moveTo(x - 34, SEA - 118); c.lineTo(x - 12, SEA - 92); c.lineTo(x + 4, SEA - 108); c.lineTo(x + 18, SEA - 84); c.lineTo(x + 34, SEA - 118); c.closePath(); c.fillStyle = CORAL; c.fill();
+    c.fillStyle = 'rgba(80,60,60,.5)';
+    for (let i = 0; i < 5; i++) { const u = (T * .16 + i * .2) % 1; circle(x + Math.sin(u * 7) * 12 + u * 40, SEA - 124 - u * 110, 12 + u * 22); c.fill(); }
+  }
 
   const span = W + 280;
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; world.cloud && i < 5; i++) {
     const x = ((i * 277 + 40 - G.dist * .04 - T * 5) % span + span) % span - 180;
     drawCloud(x, 56 + (i * 47) % (SEA * .42), .8 + (i % 3) * .24);
   }
   for (let i = 0; i < 3; i++) {
     const x = ((i * 430 + 120 - G.dist * .1) % (W + 460) + W + 460) % (W + 460) - 200;
-    c.fillStyle = i % 2 ? '#6fbf9a' : '#58a98d';
+    c.fillStyle = world.hills[i % 2];
     c.beginPath(); c.moveTo(x - 110, SEA + 2); c.quadraticCurveTo(x - 30, SEA - 62 - i * 12, x + 40, SEA - 20); c.quadraticCurveTo(x + 80, SEA - 40, x + 130, SEA + 2); c.fill();
   }
 }
@@ -923,7 +1416,7 @@ function drawWater() {
   }
   c.restore();
 
-  c.fillStyle = '#d7b77b';
+  c.fillStyle = world.sand;
   c.beginPath(); c.moveTo(-10, H);
   for (let x = -10; x <= W + 30; x += 30) c.lineTo(x, H - 20 - Math.sin((x + G.dist) * .012) * 8 - Math.sin((x + G.dist) * .031) * 4);
   c.lineTo(W + 30, H); c.closePath(); c.fill();
@@ -933,7 +1426,7 @@ function drawWater() {
     const x = i * gap - G.dist, seed = Math.abs(Math.sin(i * 12.9) * 43758) % 1, tall = 34 + seed * 66;
     c.beginPath(); c.moveTo(x, H - 20);
     c.quadraticCurveTo(x + Math.sin(T * 1.5 + i) * 18, H - 20 - tall * .6, x + Math.sin(T * 1.2 + i) * 12, H - 20 - tall);
-    c.strokeStyle = seed > .5 ? '#16805f' : '#0f6d70'; c.lineWidth = 7; c.lineCap = 'round'; c.stroke();
+    c.strokeStyle = world.weeds[seed > .5 ? 0 : 1]; c.lineWidth = 7; c.lineCap = 'round'; c.stroke();
   }
 }
 
@@ -948,7 +1441,7 @@ function drawEnt(e) {
     case 'pearl': drawPearl(e.x, e.y); break;
     case 'shield': drawShield(e.x, e.y + Math.sin(e.a * 3) * 4, 24); break;
     case 'croc': drawCroc(e.x, e.y, e.a); break;
-    case 'shark': drawShark(e.x, e.y, 1, !!e.flee, 0); break;
+    case 'shark': drawShark(e.x, e.y, e.orca ? 1.15 : 1, !!e.flee, 0, e.orca); break;
     case 'leap': if (e.st === 1) drawShark(e.x, e.y, .95, false, e.rot); else drawFin(e.x, SEA); break;
     case 'hook': if (e.y > 0) drawHook(e); break;
     case 'mermaid':
@@ -956,6 +1449,18 @@ function drawEnt(e) {
       if (!e.safe) drawShark(e.sx, e.sy, .8, !e.face);
       break;
     case 'gate': drawGate(e); break;
+    case 'item': drawItem(e); break;
+    case 'bolt': drawBolt(e); break;
+    case 'barrel': drawBarrel(e); break;
+    case 'jelly': drawJelly(e); break;
+    case 'berg': drawBerg(e); break;
+    case 'snow': drawSnow(e); break;
+    case 'stal': drawStal(e); break;
+    case 'eel': drawEel(e); break;
+    case 'puffer': drawPuffer(e); break;
+    case 'ball': drawBall(e); break;
+    case 'mine': drawMine(e); break;
+    case 'parrot': drawParrot(e); break;
   }
 }
 
@@ -970,6 +1475,10 @@ function drawGate(e) {
   circle(e.x - 114, y - 10, 2); c.fillStyle = INK; c.fill();
 }
 
+const goalPos = () => {
+  const s = clamp(W / 980, .62, 1);
+  return { x: W + 280 + (W * .62 - W - 280) * ease(G.final.in), s };
+};
 const whalePos = () => {
   const F = G.final, s = clamp(W / 980, .62, 1);
   let y = SEA + 16, rot = .03 * Math.sin(T * 1.4);
@@ -1001,7 +1510,19 @@ function bubble(x, y, text) {
 }
 
 function drawFinal() {
-  const F = G.final, w = whalePos(), sh = shipPos();
+  const F = G.final;
+  if (world.id !== 'whale') {
+    const g = goalPos(), free = F.phase === 'free' || F.phase === 'prize';
+    drawGoal(g.x, SEA + 8, g.s, F.knots, free);
+    if (world.id === 'pirate' && F.phase === 'knots') bubble(g.x - 70 * g.s, SEA - 250 * g.s, 'Не попадёшь!');
+    if (world.id === 'pirate' && F.phase === 'free') bubble(g.x - 70 * g.s, SEA - 250 * g.s, 'Спасайся!');
+    if (F.phase === 'prize') {
+      const low = SEA - 100 * g.s, high = Math.max(170, SEA * .42);
+      drawCup(g.x, low + (high - low) * F.cup, 1.5);
+    }
+    return;
+  }
+  const w = whalePos(), sh = shipPos();
   drawShip(sh.x, sh.y, sh.s, true);
   drawWhaler(sh.x - 62 * sh.s, sh.y - 40 * sh.s, sh.s, Math.sin(T * 6));
   drawWhaler(sh.x + 22 * sh.s, sh.y - 40 * sh.s, sh.s, Math.sin(T * 6 + 2));
@@ -1034,11 +1555,11 @@ function draw() {
   c.setTransform(s, 0, 0, s, sh[0] * s, sh[1] * s);
   drawBackdrop();
 
-  const prog = clamp(metres() / TOTAL, 0, 1);
-  if (!G.final) {
+  const prog = progress();
+  if (!G.final && world.id === 'whale') {
     drawShip(W - 80, SEA + 1, .2 + prog * .38, true);
     if (G.mode === 'menu' || prog > .03) { c.beginPath(); c.moveTo(W - 160, SEA); c.quadraticCurveTo(W - 140, SEA - 12 - prog * 16, W - 118, SEA); c.closePath(); c.fillStyle = WHALE; c.fill(); }
-  }
+  } else if (!G.final) drawGoal(W - 90, SEA + 4, .18 + prog * .22, world.tasks, false);
   drawWater();
   if (G.final) drawFinal();
 
@@ -1060,9 +1581,12 @@ function draw() {
     c.globalAlpha = clamp(q.l * 2, 0, 1);
     if (q.kind === 'bubble') { circle(q.x, q.y, q.r); c.strokeStyle = FOAM; c.lineWidth = 2; c.stroke(); }
     else if (q.kind === 'note') { c.font = '800 20px Nunito, sans-serif'; c.fillStyle = SUN; c.textAlign = 'center'; c.fillText('♪', q.x, q.y); }
-    else { circle(q.x, q.y, q.r); c.fillStyle = q.kind === 'jet' ? (Math.random() < .5 ? boots : SUN) : q.kind === 'spark' ? SUN : FOAM; c.fill(); }
+    else { circle(q.x, q.y, q.r); c.fillStyle = q.kind === 'jet' ? (Math.random() < .5 ? boots : SUN) : q.kind === 'spark' ? SUN : q.kind === 'smoke' ? 'rgba(60,60,70,.6)' : FOAM; c.fill(); }
   }
   c.globalAlpha = 1;
+  drawWeather();
+  if (world.id === 'cave') { drawTentacles(); drawCaveDark(); }
+  if (G.flash > 0) { c.fillStyle = `rgba(255,255,240,${G.flash * .55})`; c.fillRect(0, 0, W, H); }
   if (G.mode === 'play') drawTutorial();
 }
 
@@ -1108,17 +1632,20 @@ $('startForm').addEventListener('submit', e => {
   const f = new FormData(e.target);
   heroName = String(f.get('who') || '').trim();
   diff = +f.get('diff'); boots = f.get('boots');
-  try { localStorage.setItem('lgm-me', JSON.stringify({ heroName, diff, boots })); } catch (err) {}
+  saveMe();
   if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (err) {} }
   if (audio && audio.state === 'suspended') audio.resume();
   fanfare();
-  start();
+  toMap();
 });
 $('againBtn').addEventListener('click', respawn);
 $('resumeBtn').addEventListener('click', () => setPause(false));
 $('pauseBtn').addEventListener('click', () => { setPause(G.mode === 'play'); });
-$('quitBtn').addEventListener('click', toMenu);
-$('replayBtn').addEventListener('click', toMenu);
+$('quitBtn').addEventListener('click', toMap);
+$('mapBtn').addEventListener('click', toMap);
+$('backBtn').addEventListener('click', () => show('menu'));
+$('replayBtn').addEventListener('click', () => start(WORLDS.indexOf(world)));
+$('nextBtn').addEventListener('click', () => start(WORLDS.indexOf(world) + 1));
 $('claimBtn').addEventListener('click', showWin);
 $('soundBtn').addEventListener('click', e => {
   soundOn = !soundOn; e.target.setAttribute('aria-pressed', soundOn);
@@ -1127,8 +1654,11 @@ $('soundBtn').addEventListener('click', e => {
 
 function restore() {
   try {
+    stars = JSON.parse(localStorage.getItem('lgm-stars') || '[]') || [];
     const s = JSON.parse(localStorage.getItem('lgm-me') || 'null');
     if (!s) return;
+    const h = HEROES.find(q => q.id === s.hero);
+    if (h && h.after <= wins()) hero = h;
     $('who').value = s.heroName || '';
     const d = document.querySelector(`input[name=diff][value="${s.diff}"]`); if (d) d.checked = true;
     const b = document.querySelector(`input[name=boots][value="${s.boots}"]`); if (b) b.checked = true;
