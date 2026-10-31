@@ -10,8 +10,11 @@
   --ink: #1d2440; --paper: #fffbea; --sun: #ffcf33; --red: #ef3e42; --sky: #2fa8f4; --leaf: #58c84a; --plum: #6a4bd8;
   --display: "Russo One", "Arial Black", sans-serif; --body: "Nunito", "Trebuchet MS", sans-serif;
 }
-html, body { height: 100%; margin: 0; overflow: hidden; background: #2fa8f4; color: var(--ink); font-family: var(--body); font-weight: 800; -webkit-user-select: none; user-select: none; }
-canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+html, body { position: fixed; inset: 0; width: 100%; height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: #2fa8f4; color: var(--ink); font-family: var(--body); font-weight: 800; -webkit-user-select: none; user-select: none; }
+canvas#c { position: fixed; left: 0; top: var(--vt, 0px); width: 100%; height: var(--vh, 100%); display: block; touch-action: none; }
+/* Весь интерфейс живёт внутри видимой части экрана: на iPhone панели Safari её меняют. */
+#ui { position: fixed; left: 0; right: 0; top: var(--vt, 0px); height: var(--vh, 100%); z-index: 5; overflow: hidden; pointer-events: none; }
+#ui > * { pointer-events: auto; }
 button, label.btn {
   font-family: var(--display); font-size: 16px; color: var(--ink); background: var(--sun); border: 3px solid var(--ink); border-radius: 14px;
   padding: 10px 14px; box-shadow: 0 4px 0 var(--ink); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -22,25 +25,29 @@ button:focus-visible, label.btn:focus-visible { outline: 3px solid #fff; outline
 button:disabled { opacity: .45; cursor: default; }
 button.red { background: var(--red); color: #fff; } button.blue { background: var(--sky); color: #fff; } button.green { background: var(--leaf); }
 button.plain { background: #fff; }
-.layer { position: fixed; z-index: 5; }
-#stats { top: calc(env(safe-area-inset-top, 0px) + 8px); left: max(8px, env(safe-area-inset-left, 0px)); display: flex; gap: 6px; flex-wrap: wrap; max-width: 46vw; }
-.chip { background: var(--paper); border: 3px solid var(--ink); border-radius: 999px; padding: 3px 10px; font-size: 15px; font-weight: 900; display: flex; gap: 5px; align-items: center; font-variant-numeric: tabular-nums; }
-#menu { top: calc(env(safe-area-inset-top, 0px) + 8px); right: max(8px, env(safe-area-inset-right, 0px)); display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 52vw; }
-#menu button { padding: 6px 9px; font-size: 13px; border-radius: 11px; }
-#pads { right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); display: flex; gap: 10px; align-items: flex-end; }
+.layer { position: absolute; z-index: 5; }
+#hud { top: calc(env(safe-area-inset-top, 0px) + 6px); left: max(6px, env(safe-area-inset-left, 0px)); right: max(6px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 5px; pointer-events: none; }
+#hud > * { pointer-events: auto; }
+#stats { display: flex; gap: 4px; align-self: flex-start; }
+.chip { background: var(--paper); border: 2px solid var(--ink); border-radius: 999px; padding: 2px 8px; font-size: 14px; font-weight: 900; display: flex; gap: 4px; align-items: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#menu { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+#menu button { padding: 3px 0 4px; min-height: 42px; flex-direction: column; gap: 0; font-family: var(--body); font-weight: 900; font-size: 11px; line-height: 1.15; border-width: 2px; border-radius: 10px; box-shadow: 0 2px 0 var(--ink); min-width: 0; }
+#menu button span { font-size: 16px; line-height: 1.2; }
+@media (min-aspect-ratio: 1/1) { #hud { flex-direction: row; justify-content: space-between; align-items: flex-start; } #menu { width: min(58vw, 460px); } }
+#pads { right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); display: flex; gap: 10px; align-items: flex-end; }
 #btnJump { width: 92px; height: 92px; border-radius: 50%; font-size: 15px; padding: 0; background: var(--red); color: #fff; }
 #btnJump.call { animation: pulse .7s infinite alternate; }
 #btnFind { width: 70px; height: 70px; border-radius: 50%; font-size: 13px; padding: 0; background: var(--sky); color: #fff; }
 @keyframes pulse { to { transform: scale(1.14); } }
-#acts { left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; pointer-events: none; }
+#acts { left: 0; right: 0; box-sizing: border-box; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; pointer-events: none; }
 #acts button { pointer-events: auto; min-height: 54px; min-width: 130px; flex: 0 1 auto; flex-direction: column; gap: 0; line-height: 1.1; }
 #acts small { font-family: var(--body); font-size: 12px; font-weight: 800; }
-#talk { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); width: min(640px, calc(100vw - 24px)); background: var(--paper); border: 4px solid var(--ink); border-radius: 18px; padding: 12px 16px; box-shadow: 0 6px 0 var(--ink); z-index: 8; cursor: pointer; box-sizing: border-box; }
+#talk { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); width: min(640px, calc(100vw - 24px)); background: var(--paper); border: 4px solid var(--ink); border-radius: 18px; padding: 12px 16px; box-shadow: 0 6px 0 var(--ink); z-index: 8; cursor: pointer; box-sizing: border-box; }
 #talk b { font-family: var(--display); font-weight: 400; color: var(--red); display: block; font-size: 16px; }
 #talk p { margin: 3px 0 0; font-size: 19px; line-height: 1.25; }
 #talk i { display: block; text-align: right; font-style: normal; font-size: 13px; opacity: .65; }
-#toast { left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 62px); background: var(--ink); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 16px; z-index: 9; pointer-events: none; max-width: calc(100vw - 32px); text-align: center; box-sizing: border-box; }
-#veil { position: fixed; inset: 0; z-index: 7; background: rgba(20, 28, 70, .62); display: flex; align-items: center; justify-content: center; padding: calc(env(safe-area-inset-top, 0px) + 10px) 10px calc(env(safe-area-inset-bottom, 0px) + 10px); box-sizing: border-box; }
+#toast { pointer-events: none !important; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 94px); background: var(--ink); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 16px; z-index: 9; pointer-events: none; max-width: calc(100vw - 32px); text-align: center; box-sizing: border-box; }
+#veil { position: absolute; inset: 0; z-index: 7; background: rgba(20, 28, 70, .62); display: flex; align-items: center; justify-content: center; padding: calc(env(safe-area-inset-top, 0px) + 10px) 10px calc(env(safe-area-inset-bottom, 0px) + 10px); box-sizing: border-box; }
 #panel { background: var(--paper); border: 4px solid var(--ink); border-radius: 22px; width: min(760px, 100%); max-height: 100%; display: flex; flex-direction: column; box-shadow: 0 8px 0 var(--ink); overflow: hidden; }
 #panelHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: var(--red); color: #fff; border-bottom: 4px solid var(--ink); }
 #panelHead h2 { font-family: var(--display); font-weight: 400; margin: 0; font-size: 21px; line-height: 1.1; }
@@ -64,33 +71,51 @@ input[type=text], input[type=number] { font-family: var(--body); font-weight: 90
 @media (max-width: 460px) { .scan { grid-template-columns: 1fr; } .scan img { max-width: 160px; margin: 0 auto; } }
 #titleCard { text-align: center; }
 #titleCard h1 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 8vw, 54px); line-height: 1; margin: 2px 0 8px; color: var(--sun); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 0 5px 0 var(--ink); text-wrap: balance; }
+/* Телефон: кнопки меньше и в один ряд */
+@media (max-width: 700px), (max-height: 500px) {
+  #btnJump { width: 74px; height: 74px; font-size: 13px; } #btnFind { width: 58px; height: 58px; font-size: 12px; }
+  #acts { flex-wrap: nowrap; gap: 6px; }
+  #acts button { flex: 1 1 0; min-width: 0; max-width: 240px; min-height: 48px; padding: 6px 5px; font-size: 14px; }
+  #acts small { font-size: 11px; }
+  #talk p { font-size: 17px; } #talk { padding: 9px 12px; }
+}
+@media (max-height: 500px) {
+  #toast { top: calc(env(safe-area-inset-top, 0px) + 56px); }
+  #panelHead { padding: 5px 12px; } #panelHead h2 { font-size: 17px; } #panelBody { padding: 10px 12px; }
+  #talk p { font-size: 15px; } #talk i { display: none; }
+  #titleCard h1 { font-size: 26px; }
+}
 [hidden] { display: none !important; }
 </style>
 
 <canvas id="c" aria-label="Игровой мир"></canvas>
 
-<div id="stats" class="layer" hidden>
-  <span class="chip" title="Покеболы"><canvas id="ballIco" width="40" height="40" style="width:20px;height:20px"></canvas><span id="sBalls">0</span></span>
-  <span class="chip" title="Монеты">🪙 <span id="sCoins">0</span></span>
-  <span class="chip" title="Поймано"><span id="sDex">0/18</span></span>
-  <span class="chip" id="sCup" hidden>🏆</span>
+<div id="ui">
+  <div id="hud" class="layer" hidden>
+    <div id="stats">
+      <span class="chip" title="Покеболы"><canvas id="ballIco" width="40" height="40" style="width:16px;height:16px"></canvas><span id="sBalls">0</span></span>
+      <span class="chip" title="Монеты">🪙 <span id="sCoins">0</span></span>
+      <span class="chip" title="Поймано"><span id="sDex">0/18</span></span>
+      <span class="chip" id="sCup" hidden>🏆</span>
+    </div>
+    <div id="menu">
+      <button id="mBag" class="red"><span>🔴</span>Покебол</button>
+      <button id="mCards"><span>🃏</span>Карточки</button>
+      <button id="mTown" class="green"><span>🏠</span>Домики</button>
+      <button id="mSport" class="blue"><span>🏃</span>Спорт</button>
+      <button id="mMap" class="plain"><span>🗺️</span>Карта</button>
+      <button id="mSound" class="plain" aria-label="Звук">🔊</button>
+    </div>
+  </div>
+  <div id="pads" class="layer" hidden>
+    <button id="btnFind">Искать</button>
+    <button id="btnJump">Прыжок</button>
+  </div>
+  <div id="acts" class="layer" hidden></div>
+  <div id="talk" hidden><b id="talkWho"></b><p id="talkText"></p><i>нажми, чтобы дальше</i></div>
+  <div id="toast" class="layer" hidden></div>
+  <div id="veil" hidden><div id="panel" role="dialog"><div id="panelHead"><h2 id="panelTitle"></h2><button id="panelClose" class="plain" aria-label="Закрыть">✕</button></div><div id="panelBody"></div></div></div>
 </div>
-<div id="menu" class="layer" hidden>
-  <button id="mBag" class="red">Покебол</button>
-  <button id="mCards">Карточки</button>
-  <button id="mTown" class="green">Домики</button>
-  <button id="mSport" class="blue">Спорт</button>
-  <button id="mMap" class="plain">Карта</button>
-  <button id="mSound" class="plain" aria-label="Звук">🔊</button>
-</div>
-<div id="pads" class="layer" hidden>
-  <button id="btnFind">Искать</button>
-  <button id="btnJump">Прыжок</button>
-</div>
-<div id="acts" class="layer" hidden></div>
-<div id="talk" hidden><b id="talkWho"></b><p id="talkText"></p><i>нажми, чтобы дальше</i></div>
-<div id="toast" class="layer" hidden></div>
-<div id="veil" hidden><div id="panel" role="dialog"><div id="panelHead"><h2 id="panelTitle"></h2><button id="panelClose" class="plain" aria-label="Закрыть">✕</button></div><div id="panelBody"></div></div></div>
 <input id="scanCam" type="file" accept="image/*" capture="environment" hidden>
 <input id="scanFile" type="file" accept="image/*" hidden>
 
@@ -112,10 +137,15 @@ function h(tag, props, ...kids) {
 const cv = $('c'), ctx = cv.getContext('2d');
 let W = 0, H = 0, DPR = 1, ZOOM = 1;
 function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
+  const v = window.visualViewport; if (v && v.scale > 1.05) return;
+  DPR = Math.min(window.devicePixelRatio || 1, 2); W = Math.round(v ? v.width : innerWidth); H = Math.round(v ? v.height : innerHeight);
+  const st = document.documentElement.style; st.setProperty('--vh', H + 'px'); st.setProperty('--vt', Math.round(v ? v.offsetTop : 0) + 'px');
   cv.width = W * DPR; cv.height = H * DPR; ZOOM = Math.min(W, H) < 560 ? .78 : 1;
 }
-addEventListener('resize', resize); resize();
+addEventListener('resize', resize); addEventListener('orientationchange', () => setTimeout(resize, 300));
+if (window.visualViewport) { visualViewport.addEventListener('resize', resize); visualViewport.addEventListener('scroll', resize); }
+resize();
+const SHORT = () => H < 460;
 
 /* ---------- данные: стихии и покемоны (все нарисованы с нуля для этой игры) ---------- */
 const ELEM = {
@@ -421,7 +451,7 @@ function closePanel() { $('veil').hidden = true; const f = panelClose; panelClos
 $('panelClose').onclick = () => { sfx.ui(); closePanel(); };
 function syncUI() {
   const world = scene === WORLD, b = $('sBalls');
-  $('stats').hidden = $('menu').hidden = !world; $('pads').hidden = !world || !$('veil').hidden;
+  $('hud').hidden = !world; $('pads').hidden = !world || !$('veil').hidden;
   b.textContent = G.balls; $('sCoins').textContent = G.coins; $('sDex').textContent = caughtSet().size + '/' + SPECIES.length; $('sCup').hidden = !G.cup; $('mSound').textContent = G.mute ? '🔇' : '🔊';
 }
 const busy = () => !$('talk').hidden || !$('veil').hidden;
@@ -591,12 +621,12 @@ function startCatch(w) {
   const sp = SPECIES[w.sp], z = zoneOf(w.x, w.y);
   if (G.balls <= 0) { G.balls = 3; save(); toast('Эш прислал тебе 3 покебола!'); }
   let t = 0, mode = 'aim', tries = 0, q = 0, ball = null, wob = 0, wobN = 0, msg = 'Жми, когда кольцо зелёное!', hideC = false;
-  const size = () => Math.min(W, H) * .13, mx = () => W / 2 + Math.sin(t * 1.5) * W * .18, my = () => H * .44 - Math.abs(Math.sin(t * 3)) * 24;
+  const ballY = () => H - (SHORT() ? 88 : 124), size = () => Math.min(W, H) * .13, mx = () => W / 2 + Math.sin(t * 1.5) * W * .18, my = () => H * .44 - Math.abs(Math.sin(t * 3)) * 24;
   const leave = () => { spawnWild(z); go(WORLD); };
   const tap = () => {
     if (mode !== 'aim' || G.balls <= 0) return;
     G.balls--; save(); q = 1 - Math.abs(Math.sin(t * 2.1)); mode = 'fly'; sfx.throw();
-    ball = { t: 0, sx: W / 2, sy: H - 124, ex: mx(), ey: my() }; setActs([]);
+    ball = { t: 0, sx: W / 2, sy: ballY(), ex: mx(), ey: my() }; setActs([]);
   };
   go({
     tap, enter() { acts(); },
@@ -614,12 +644,12 @@ function startCatch(w) {
       if (mode === 'end') { ball.t += dt; if (ball.t > 1) leave(); }
     },
     draw(c, dt) {
-      stage(c, z); hugeText(c, sp.n, W / 2, 60, Math.min(38, W * .08), '#fff');
-      hugeText(c, msg, W / 2, 92, Math.min(20, W * .05), '#ffcf33'); hugeText(c, 'Покеболов: ' + G.balls, W / 2, H - 84, 17, '#fff');
+      stage(c, z); hugeText(c, sp.n, W / 2, SHORT() ? 32 : 60, Math.min(SHORT() ? 26 : 38, W * .08), '#fff');
+      hugeText(c, msg, W / 2, SHORT() ? 56 : 92, Math.min(20, W * .05), '#ffcf33'); hugeText(c, 'Покеболов: ' + G.balls, SHORT() ? W - 90 : W / 2, SHORT() ? 32 : H - 84, 17, '#fff');
       const cx = mode === 'aim' || mode === 'broke' ? mx() : (ball ? ball.ex : mx()), cy = mode === 'aim' || mode === 'broke' ? my() : (ball ? ball.ey : my()), s = size();
       c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); ell(c, cx, H * .46 + s * 1.05, s, s * .25); c.fill();
       if (!hideC) drawCreature(c, sp, cx, cy, s, t, false);
-      if (mode === 'aim') { const k = Math.abs(Math.sin(t * 2.1)), good = k < .3; c.lineWidth = 7; c.strokeStyle = good ? '#3fe05a' : k < .6 ? '#ffcf33' : '#ef3e42'; c.beginPath(); c.arc(cx, cy, s * (1.05 + k * .75), 0, 7); c.stroke(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, s * 1.05, 0, 7); c.stroke(); drawBall(c, W / 2, H - 124, 24, Math.sin(t * 3) * .2); }
+      if (mode === 'aim') { const k = Math.abs(Math.sin(t * 2.1)), good = k < .3; c.lineWidth = 7; c.strokeStyle = good ? '#3fe05a' : k < .6 ? '#ffcf33' : '#ef3e42'; c.beginPath(); c.arc(cx, cy, s * (1.05 + k * .75), 0, 7); c.stroke(); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, s * 1.05, 0, 7); c.stroke(); drawBall(c, W / 2, ballY(), SHORT() ? 18 : 24, Math.sin(t * 3) * .2); }
       if (mode === 'fly') { const e = ball.t, x = ball.sx + (ball.ex - ball.sx) * e, y = ball.sy + (ball.ey - ball.sy) * e - Math.sin(e * Math.PI) * 120; drawBall(c, x, y, 26 - e * 8, e * 12); }
       if (mode === 'in') drawBall(c, ball.ex, ball.ey + Math.min(1, ball.t * 3) * (Math.min(H * .62, H - 130) - ball.ey), 20, 0);
       if (mode === 'wob' || mode === 'caught') drawBall(c, ball.ex, ball.ey, 22, wob);
@@ -647,7 +677,7 @@ function fighter(it) {
 function battle(o) {
   let side = 0, t = 0, shake = 0, alive = true, msg = '', lunge = [0, 0], flash = [0, 0], i = [0, 0];
   const teams = [o.a, o.b], names = [o.nameA, o.nameB], cur = s => teams[s][i[s]];
-  const spot = s => { const land = W > H; return s === 0 ? { x: land ? W * .27 : W * .3, y: H * (land ? .6 : .6) } : { x: land ? W * .73 : W * .7, y: H * (land ? .36 : .32) }; };
+  const spot = s => { const land = W > H, short = SHORT(); return s === 0 ? { x: land ? W * .2 : W * .3, y: H * (short ? .52 : .6) } : { x: land ? W * .8 : W * .7, y: H * (short ? .36 : land ? .36 : .38) }; };
   const scale = () => Math.min(W, H) * .15;
   const leave = (win) => { alive = false; setActs([]); o.onEnd(win); };
   const sc = {
@@ -660,14 +690,14 @@ function battle(o) {
         c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); ell(c, p.x, p.y + S * 1.15, S * 1.2, S * .3); c.fill();
         if (f.hp > 0 || flash[s] > 0) { c.globalAlpha = flash[s] > 0 && Math.floor(t * 30) % 2 ? .35 : 1;
           if (f.img) drawCard(c, f.img, x, y, S * 2.4, Math.sin(t * 2) * .03); else drawCreature(c, f.sp, x, y, S, t, s === 0 ? false : true); c.globalAlpha = 1; }
-        const bw = Math.min(W * .54, 260), bx = clamp(p.x - bw / 2, 8, W - bw - 8), by = s === 0 ? Math.min(p.y + S * 1.4, H - 150) : Math.max(p.y - S * 1.7 - 34, 8);
+        const short = SHORT(), bw = Math.min(W * (short ? .3 : .54), 260), bx = short ? (s === 0 ? p.x + S * 1.35 : p.x - S * 1.35 - bw) : clamp(p.x - bw / 2, 8, W - bw - 8), by = short ? p.y - 23 : s === 0 ? Math.min(p.y + S * 1.4, H - 150) : Math.max(p.y - S * 1.7 - 34, 8);
         c.fillStyle = '#fffbea'; c.strokeStyle = OUT; c.lineWidth = 3; c.beginPath(); c.roundRect(bx, by, bw, 46, 12); c.fill(); c.stroke();
         c.fillStyle = OUT; c.font = '900 15px Nunito, sans-serif'; c.textAlign = 'left'; const nm = f.name.length > 16 ? f.name.slice(0, 15) + '…' : f.name; c.fillText(ELEM[f.elem].i + ' ' + nm, bx + 10, by + 19);
         c.textAlign = 'right'; c.fillText(Math.max(0, Math.ceil(f.hp)) + '/' + f.max, bx + bw - 10, by + 19);
         const k = clamp(f.hp / f.max, 0, 1); c.fillStyle = '#d8d8d8'; c.beginPath(); c.roundRect(bx + 10, by + 27, bw - 20, 11, 5); c.fill(); c.fillStyle = k > .5 ? '#3fcf5a' : k > .25 ? '#ffb020' : '#ef3e42'; c.beginPath(); c.roundRect(bx + 10, by + 27, Math.max(3, (bw - 20) * k), 11, 5); c.fill();
       }
-      c.restore(); hugeText(c, names[0] + ' — ' + names[1], W / 2, 34, Math.min(19, W * .045), '#fff');
-      if (msg) hugeText(c, msg, W / 2, Math.max(H * .12, 70), Math.min(25, W * .055), '#ffcf33');
+      c.restore(); hugeText(c, names[0] + ' — ' + names[1], W / 2, SHORT() ? 22 : 34, Math.min(19, W * .045), '#fff');
+      if (msg) hugeText(c, msg, W / 2, SHORT() ? 46 : Math.max(H * .12, 70), Math.min(SHORT() ? 19 : 25, W * .055), '#ffcf33');
       drawFx(c, dt);
     },
   };
@@ -740,7 +770,7 @@ function startSport(it) {
       for (const o of obs) { c.fillStyle = '#fff'; c.strokeStyle = OUT; c.lineWidth = 4; c.beginPath(); c.roundRect(o.x - 34, gy() + S() - 58, 68, 16, 5); c.fill(); c.stroke(); c.beginPath(); c.roundRect(o.x - 30, gy() + S() - 44, 8, 44, 3); c.roundRect(o.x + 22, gy() + S() - 44, 8, 44, 3); c.fillStyle = '#ef3e42'; c.fill(); c.stroke(); }
       const yy = gy() + y + (stun > 0 ? Math.sin(t * 40) * 3 : 0);
       if (img) drawCard(c, img, px(), yy, S() * 2.1, 0); else drawCreature(c, SPECIES[it.sp], px(), yy, S(), t * 2);
-      hugeText(c, 'Прыжки: ' + score, W / 2, 56, 30, '#fff'); hugeText(c, 'Осталось: ' + Math.max(0, Math.ceil(DUR - t)), W / 2, 90, 19, '#ffcf33'); hugeText(c, over ? 'Финиш!' : 'Нажимай, чтобы прыгать!', W / 2, gy() + S() + 86, Math.min(21, W * .05), '#fff'); drawFx(c, dt);
+      hugeText(c, 'Прыжки: ' + score, W / 2, 56, 30, '#fff'); hugeText(c, 'Осталось: ' + Math.max(0, Math.ceil(DUR - t)), W / 2, 90, 19, '#ffcf33'); hugeText(c, over ? 'Финиш!' : 'Нажимай, чтобы прыгать!', W / 2, Math.min(gy() + S() + 86, H - 12), Math.min(21, W * .05), '#fff'); drawFx(c, dt);
     },
   });
 }
