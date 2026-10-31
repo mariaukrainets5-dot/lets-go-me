@@ -91,7 +91,7 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
 .opts { display: flex; flex-wrap: wrap; gap: 8px; }
 .opts label { position: relative; }
 .opts input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.opts span { display: block; padding: 5px 13px; border: 3px solid var(--ink); border-radius: 10px; background: #fff; font-size: 15px; font-weight: 800; }
+.opts label > span { display: block; padding: 5px 13px; border: 3px solid var(--ink); border-radius: 10px; background: #fff; font-size: 15px; font-weight: 800; }
 .opts input:checked + span { background: var(--sun); box-shadow: 3px 3px 0 var(--ink); }
 .opts input:focus-visible + span { outline: 3px solid var(--coral); outline-offset: 2px; }
 .boot { display: inline-block; width: 13px; height: 13px; border-radius: 4px; border: 2px solid var(--ink); margin-right: 6px; vertical-align: -2px; }
@@ -164,21 +164,21 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
 </head>
 <body>
 <div id="game">
-  <canvas id="sea" aria-label="Море, по которому бежит герой в летающих ботинках"></canvas>
+  <canvas id="sea" data-al="sea"></canvas>
 
   <div id="hud" hidden>
     <div class="map" aria-hidden="true">
-      <i style="left:33.3%"></i><i style="left:66.6%"></i><span id="me"></span><b>кит</b>
+      <i style="left:33.3%"></i><i style="left:66.6%"></i><span id="me"></span><b></b>
     </div>
     <div class="row">
-      <span class="stat" id="hearts" aria-label="Жизни">♥♥♥</span>
-      <span class="stat" title="Круглые щиты"><span class="dot shield"></span><span id="shields">0</span></span>
-      <span class="stat" title="Жемчуг"><span class="dot"></span><span id="pearls">0</span></span>
+      <span class="stat" id="hearts" data-al="hearts">♥♥♥</span>
+      <span class="stat" data-ti="shieldsT"><span class="dot shield"></span><span id="shields">0</span></span>
+      <span class="stat" data-ti="pearlsT"><span class="dot"></span><span id="pearls">0</span></span>
       <span class="stat" id="left">3000 м</span>
-      <span class="force" title="Сила ботинок">Сила<div><span id="force"></span></div></span>
+      <span class="force" data-ti="forceT"><span data-t="force"></span><div><span id="force"></span></div></span>
       <span class="spacer"></span>
-      <button class="tiny" id="soundBtn" type="button" aria-pressed="true">Звук</button>
-      <button class="tiny" id="pauseBtn" type="button">Пауза</button>
+      <button class="tiny" id="soundBtn" type="button" aria-pressed="true"></button>
+      <button class="tiny" id="pauseBtn" type="button" data-t="pause"></button>
     </div>
   </div>
 
@@ -187,44 +187,49 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
   <section class="screen" id="menu">
     <form class="card" id="startForm">
       <h1>Let's Go Me</h1>
-      <p class="lead">Пять морей, пять разных приключений. Надевай летающие ботинки, беги по воде, решай примеры и спасай друзей!</p>
+      <div class="opts" role="radiogroup" aria-label="Мова / Язык">
+        <label><input type="radio" name="lang" value="uk"><span>Українська</span></label>
+        <label><input type="radio" name="lang" value="ru"><span>Русский</span></label>
+      </div>
+      <p class="lead" data-t="lead"></p>
       <div class="keys">
-        <div><b>Вверх</b>Стрелка ↑ или верх экрана: лети над водой</div>
-        <div><b>Вниз</b>Стрелка ↓ или низ экрана: ныряй за круглыми щитами</div>
-        <div><b>Отпусти</b>Беги по воде, ботинки снова зарядятся</div>
+        <div><b data-t="up"></b><span data-t="upHow"></span></div>
+        <div><b data-t="down"></b><span data-t="downHow"></span></div>
+        <div><b data-t="free"></b><span data-t="freeHow"></span></div>
       </div>
-      <p class="note">Круглый щит спасёт от одного удара. Новые герои открываются за пройденные моря.</p>
-      <label class="field" for="who">Как зовут героя?
-        <input id="who" name="who" maxlength="16" autocomplete="off" placeholder="Напиши имя">
+      <p class="note" data-t="perks"></p>
+      <label class="field" for="who"><span data-t="who"></span>
+        <input id="who" name="who" maxlength="16" autocomplete="off" data-ph="whoPh">
       </label>
-      <div class="field">Какое приключение?
-        <div class="opts" role="radiogroup" aria-label="Сложность">
-          <label><input type="radio" name="diff" value="0"><span>Лёгкое</span></label>
-          <label><input type="radio" name="diff" value="1" checked><span>Смелое</span></label>
-          <label><input type="radio" name="diff" value="2"><span>Капитанское</span></label>
+      <div class="field"><span data-t="diff"></span>
+        <div class="opts" role="radiogroup" data-al="diffA">
+          <label><input type="radio" name="diff" value="0"><span data-t="d0"></span></label>
+          <label><input type="radio" name="diff" value="1" checked><span data-t="d1"></span></label>
+          <label><input type="radio" name="diff" value="2"><span data-t="d2"></span></label>
         </div>
-        <p class="note">Лёгкое: ×2, ×3, ×5, ×10. Смелое: ×3, ×4, ×8 до 10. Капитанское: ×3, ×4, ×8 до 12.</p>
+        <p class="note" data-t="dNote"></p>
       </div>
-      <div class="field">Какие ботинки?
-        <div class="opts" role="radiogroup" aria-label="Цвет ботинок">
-          <label><input type="radio" name="boots" value="#ff5a3c" checked><span><i class="boot" style="background:#ff5a3c"></i>Огонь</span></label>
-          <label><input type="radio" name="boots" value="#ffc933"><span><i class="boot" style="background:#ffc933"></i>Солнце</span></label>
-          <label><input type="radio" name="boots" value="#4fd8a4"><span><i class="boot" style="background:#4fd8a4"></i>Волна</span></label>
+      <div class="field"><span data-t="boots"></span>
+        <div class="opts" role="radiogroup" data-al="bootsA">
+          <label><input type="radio" name="boots" value="#ff5a3c" checked><span><i class="boot" style="background:#ff5a3c"></i><span class="plain" data-t="b0"></span></span></label>
+          <label><input type="radio" name="boots" value="#ffc933"><span><i class="boot" style="background:#ffc933"></i><span class="plain" data-t="b1"></span></span></label>
+          <label><input type="radio" name="boots" value="#4fd8a4"><span><i class="boot" style="background:#4fd8a4"></i><span class="plain" data-t="b2"></span></span></label>
         </div>
       </div>
-      <label class="tick"><input type="checkbox" id="voiceBox" checked>Читать задачи вслух</label>
+      <label class="tick"><input type="checkbox" id="voiceBox" checked><span data-t="voice"></span></label>
+      <p class="note" id="noVoice" data-t="noVoice" hidden></p>
       <button class="go" type="submit" id="startBtn">Let's go!</button>
     </form>
   </section>
 
   <section class="screen" id="map" hidden>
     <div class="card">
-      <h2>Куда бежим?</h2>
+      <h2 data-t="where"></h2>
       <div class="levels" id="levels"></div>
-      <h2>Кто бежит?</h2>
+      <h2 data-t="runner"></h2>
       <div class="heroes" id="heroes"></div>
       <p class="note" id="heroPerk"></p>
-      <button class="go quiet" type="button" id="backBtn">Назад</button>
+      <button class="go quiet" type="button" id="backBtn" data-t="back"></button>
     </div>
   </section>
 
@@ -232,7 +237,7 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
     <div class="card" role="dialog" aria-labelledby="taskQ">
       <div class="taskTop">
         <p id="taskKicker"></p>
-        <button id="sayBtn" type="button" aria-label="Прочитать задачу вслух">Слушать</button>
+        <button id="sayBtn" type="button" data-al="listenA" data-t="listen"></button>
       </div>
       <h2 id="taskQ"></h2>
       <div id="taskPic" aria-hidden="true"></div>
@@ -243,25 +248,25 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
 
   <section class="screen" id="caught" hidden>
     <div class="card">
-      <h2 id="caughtTitle">Ам! Тебя поймали</h2>
-      <p class="lead">Настоящие герои не сдаются. Попробуй ещё раз, друзья ждут!</p>
-      <button class="go" type="button" id="againBtn">Снова в путь</button>
+      <h2 id="caughtTitle"></h2>
+      <p class="lead" data-t="heroes"></p>
+      <button class="go" type="button" id="againBtn" data-t="again"></button>
     </div>
   </section>
 
   <section class="screen" id="pause" hidden>
     <div class="card">
-      <h2>Пауза</h2>
-      <p class="lead">Море подождёт. Кит тоже.</p>
+      <h2 data-t="pause"></h2>
+      <p class="lead" data-t="wait"></p>
       <div class="actions">
-        <button class="go" type="button" id="resumeBtn">Дальше</button>
-        <button class="go quiet" type="button" id="quitBtn">На карту</button>
+        <button class="go" type="button" id="resumeBtn" data-t="next"></button>
+        <button class="go quiet" type="button" id="quitBtn" data-t="toMap"></button>
       </div>
     </div>
   </section>
 
   <section class="screen low" id="claim" hidden>
-    <button class="go" type="button" id="claimBtn">Забрать приз</button>
+    <button class="go" type="button" id="claimBtn" data-t="claim"></button>
   </section>
 
   <section class="screen" id="win" hidden>
@@ -282,9 +287,9 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
       <ul class="checks" id="checks"></ul>
       <p class="note" id="winNote"></p>
       <div class="actions">
-        <button class="go" type="button" id="nextBtn">Дальше</button>
-        <button class="go quiet" type="button" id="replayBtn">Ещё раз</button>
-        <button class="go quiet" type="button" id="mapBtn">На карту</button>
+        <button class="go" type="button" id="nextBtn" data-t="next"></button>
+        <button class="go quiet" type="button" id="replayBtn" data-t="replay"></button>
+        <button class="go quiet" type="button" id="mapBtn" data-t="toMap"></button>
       </div>
     </div>
   </section>
@@ -311,62 +316,146 @@ const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = R(0, i
 const fight = (leg, ...rest) => rest.map(([k, w, grow = 0]) => [k, w + leg * grow]);
 const WORLDS = [
   {
-    id: 'whale', name: 'Кит на удочке', mark: 'кит', goal: 'far', total: 3000, tasks: 3, gap: 1, cold: 1, wave: 1, mermaids: [650, 1500, 2450],
-    brief: 'Беги к китобоям и развяжи верёвку', say: 'Спаси кита от китобоев!', tip: 'Щит спасает от одного укуса.',
-    taskName: 'Узел', taskDo: 'развяжи верёвку', freed: 'Кит свободен!', prize: 'Кубок Спасителя Китов', done: 'Кит спасён',
-    gateSay: ['Верно! Плыви дальше, там китобои!', 'Верно! Кит совсем близко!'],
+    id: 'whale', goal: 'far', total: 3000, tasks: 3, gap: 1, cold: 1, wave: 1, mermaids: [650, 1500, 2450],
     sky: ['#5fcbe2', '#b9ecd9', '#fff0b8'], water: ['#12aeab', '#0b7f95', '#06365a'], sand: '#d7b77b', weeds: ['#16805f', '#0f6d70'], hills: ['#6fbf9a', '#58a98d'], cloud: 'rgba(253,248,228,.92)', sun: SUN,
     pool: leg => fight(leg, ['croc', 3], ['shark', 3], ['pearls', 2], ['leap', 1, 1], ['hook', 0, 2], ['combo', leg === 2 ? 1 : 0])
   },
   {
-    id: 'storm', name: 'Черепашата в шторм', mark: 'маяк', goal: 'collect', item: 'raft', rafts: 4, every: 480, tasks: 3, gap: 1, cold: 1, wave: 2.4, mermaids: [],
-    brief: 'Собери 4 плотика с черепашатами и зажги маяк', say: 'Собери 4 плотика с черепашатами!', tip: 'Когда мигает молния, ныряй!',
-    taskName: 'Лампа', taskDo: 'зажги маяк', freed: 'Маяк горит! Все дома!', prize: 'Кубок Хранителя Маяка', done: 'Черепашата спасены',
-    gateSay: ['Верно! Шторм всё сильнее, держись!', 'Верно! Уже виден берег!'],
+    id: 'storm', goal: 'collect', item: 'raft', rafts: 4, every: 480, tasks: 3, gap: 1, cold: 1, wave: 2.4, mermaids: [],
     sky: ['#2b3a55', '#4d5f7a', '#8b9bab'], water: ['#2c7f8c', '#1a5670', '#0a2a45'], sand: '#a99a7c', weeds: ['#1f6a5c', '#16545c'], hills: ['#3f5f60', '#35504f'], cloud: 'rgba(66,80,104,.95)',
     pool: leg => fight(leg, ['bolt', 3, 1], ['barrel', 3], ['jelly', 3, 1], ['pearls', 2], ['shark', 1])
   },
   {
-    id: 'ice', name: 'Ледяная клетка', mark: 'клетка', goal: 'collect', item: 'key', rafts: 3, every: 620, tasks: 3, gap: 1.05, cold: 1.5, wave: .7, mermaids: [],
-    brief: 'Найди 3 золотых ключа и открой клетку', say: 'Найди 3 золотых ключа!', tip: 'Вода ледяная: под водой сила тает быстрее.',
-    taskName: 'Замок', taskDo: 'открой клетку', freed: 'Пингвинята на свободе!', prize: 'Кубок Друга Пингвинов', done: 'Пингвинята спасены',
-    gateSay: ['Верно! Ищи следующий ключ!', 'Верно! Клетка уже близко!'],
+    id: 'ice', goal: 'collect', item: 'key', rafts: 3, every: 620, tasks: 3, gap: 1.05, cold: 1.5, wave: .7, mermaids: [],
     sky: ['#a9dcf2', '#d9f1f7', '#f7fbff'], water: ['#3fb2cf', '#2284ab', '#0c4470'], sand: '#dfe9ee', weeds: ['#6fa8bd', '#5a93aa'], hills: ['#eef7fb', '#d6e8f2'], cloud: 'rgba(255,255,255,.95)', sun: '#fff1b0',
     pool: leg => fight(leg, ['berg', 3, 1], ['orca', 3, 1], ['snow', 3, 1], ['pearls', 2])
   },
   {
-    id: 'cave', name: 'Пещера осьминога', mark: 'выход', goal: 'far', total: 2700, tasks: 3, gap: .95, cold: 1, wave: .6, mermaids: [],
-    brief: 'Убеги от гигантского осьминога к выходу', say: 'Беги! Осьминог за тобой!', tip: 'Каждый удар подпускает щупальца ближе.',
-    taskName: 'Камень', taskDo: 'разбери завал', freed: 'Выход открыт!', prize: 'Кубок Смелого Беглеца', done: 'Ты убежал от осьминога',
-    gateSay: ['Верно! Щупальца отстали!', 'Верно! Впереди свет!'],
+    id: 'cave', goal: 'far', total: 2700, tasks: 3, gap: .95, cold: 1, wave: .6, mermaids: [],
     sky: ['#0c1626', '#16263a', '#21394c'], water: ['#127a78', '#0b4d60', '#051f33'], sand: '#4b4a55', weeds: ['#1f8f7a', '#3a6fa8'], hills: ['#1d2c40', '#172436'], cloud: null,
     pool: leg => fight(leg, ['stal', 3, 1], ['eel', 3, 1], ['puffer', 3, 1], ['pearls', 2])
   },
   {
-    id: 'pirate', name: 'Пиратский остров', mark: 'пираты', goal: 'far', total: 3000, tasks: 5, gap: .92, cold: 1, wave: 1.2, mermaids: [1400],
-    brief: 'Доберись до пиратов и подбей корабль примерами', say: 'Вперёд, на пиратов!', tip: 'Каждый верный ответ это выстрел из пушки.',
-    taskName: 'Выстрел', taskDo: 'реши и стреляй', freed: 'Пираты сбежали!', prize: 'Кубок Адмирала Морей', done: 'Пираты побеждены',
-    gateSay: ['Верно! Пушки уже рядом!', 'Верно! Вижу чёрный флаг!'],
+    id: 'pirate', goal: 'far', total: 3000, tasks: 5, gap: .92, cold: 1, wave: 1.2, mermaids: [1400],
     sky: ['#f2743f', '#f9a95e', '#ffe2a0'], water: ['#178f95', '#0e6280', '#072f50'], sand: '#c49a63', weeds: ['#14785a', '#0f6470'], hills: ['#7b4a3c', '#5e3a35'], cloud: 'rgba(255,226,190,.85)', sun: '#ffe08a',
     pool: leg => fight(leg, ['ball', 3, 1], ['mine', 3, 1], ['parrot', 3], ['shark', 2], ['pearls', 2], ['croc', 1])
   }
 ];
 const HEROES = [
-  { id: 'runner', name: 'Бегун', perk: 'Ботинки заряжаются быстрее', fly: 1, dive: 1, charge: 1.4, suit: SUN, cape: CORAL, skin: '#f1c49c', hair: '#54311f', after: 0 },
-  { id: 'diver', name: 'Ныряльщица', perk: 'Под водой почти не устаёт', fly: 1, dive: .4, charge: 1, suit: '#17b8a6', skin: '#c98d5e', hair: '#2a1a14', after: 0 },
-  { id: 'robot', name: 'Робот Болтик', perk: 'Четыре сердца вместо трёх', fly: 1, dive: 1, charge: 1, hearts: 4, suit: '#9db4c0', skin: '#cfdde3', after: 1 },
-  { id: 'penguin', name: 'Пингвин Пип', perk: 'Под водой не устаёт, но летает хуже', fly: 1.5, dive: 0, charge: 1, suit: '#22354a', skin: '#22354a', after: 2 },
-  { id: 'cat', name: 'Кот Мур', perk: 'Притягивает жемчуг и начинает со щитом', fly: 1, dive: 1, charge: 1, magnet: true, shields: 1, suit: '#f0953a', skin: '#f0953a', after: 3 },
-  { id: 'dragon', name: 'Дракончик', perk: 'Летает очень долго', fly: .4, dive: 1.2, charge: 1, suit: '#3f9b5c', skin: '#58b874', cape: '#2b7a46', after: 4 }
+  { id: 'runner', fly: 1, dive: 1, charge: 1.4, suit: SUN, cape: CORAL, skin: '#f1c49c', hair: '#54311f', after: 0 },
+  { id: 'diver', fly: 1, dive: .4, charge: 1, suit: '#17b8a6', skin: '#c98d5e', hair: '#2a1a14', after: 0 },
+  { id: 'robot', fly: 1, dive: 1, charge: 1, hearts: 4, suit: '#9db4c0', skin: '#cfdde3', after: 1 },
+  { id: 'penguin', fly: 1.5, dive: 0, charge: 1, suit: '#22354a', skin: '#22354a', after: 2 },
+  { id: 'cat', fly: 1, dive: 1, charge: 1, magnet: true, shields: 1, suit: '#f0953a', skin: '#f0953a', after: 3 },
+  { id: 'dragon', fly: .4, dive: 1.2, charge: 1, suit: '#3f9b5c', skin: '#58b874', cape: '#2b7a46', after: 4 }
 ];
-const CAUGHT = {
-  croc: 'Клац! Крокодил тебя поймал', hook: 'Попался на крючок китобоев', shark: 'Ам! Акула тебя поймала', bolt: 'Бах! В тебя попала молния',
-  barrel: 'Бум! Бочка сбила тебя', jelly: 'Ай! Медуза ужалила', berg: 'Бух! Ты врезался в айсберг', orca: 'Ам! Косатка тебя поймала', snow: 'Бац! Снежок сбил тебя',
-  stal: 'Ой! На тебя упала сосулька из камня', eel: 'Ай! Угорь ударил током', puffer: 'Ой! Рыба-ёж уколола', ball: 'Бах! Попало ядро', mine: 'Бум! Ты задел мину', parrot: 'Ай! Попугай клюнул'
+/* ---------- words: every line the child sees or hears, one table per language ---------- */
+const TEXT = {
+  ru: {
+    ui: {
+      sea: 'Море, по которому бежит герой в летающих ботинках', hearts: 'Жизни', shieldsT: 'Круглые щиты', pearlsT: 'Жемчуг', forceT: 'Сила ботинок', force: 'Сила',
+      sound: 'Звук', soundOff: 'Без звука', pause: 'Пауза', lead: 'Пять морей, пять разных приключений. Надевай летающие ботинки, беги по воде, решай примеры и спасай друзей!',
+      up: 'Вверх', upHow: 'Стрелка ↑ или верх экрана: лети над водой', down: 'Вниз', downHow: 'Стрелка ↓ или низ экрана: ныряй за круглыми щитами', free: 'Отпусти', freeHow: 'Беги по воде, ботинки снова зарядятся',
+      perks: 'Круглый щит спасёт от одного удара. Новые герои открываются за пройденные моря.', who: 'Как зовут героя?', whoPh: 'Напиши имя',
+      diff: 'Какое приключение?', diffA: 'Сложность', d0: 'Лёгкое', d1: 'Смелое', d2: 'Капитанское', dNote: 'Лёгкое: ×2, ×3, ×5, ×10. Смелое: ×3, ×4, ×8 до 10. Капитанское: ×3, ×4, ×8 до 12.',
+      boots: 'Какие ботинки?', bootsA: 'Цвет ботинок', b0: 'Огонь', b1: 'Солнце', b2: 'Волна', voice: 'Читать задачи вслух', noVoice: 'На этом устройстве нет русского голоса, задачи будут только текстом.',
+      where: 'Куда бежим?', runner: 'Кто бежит?', back: 'Назад', listen: 'Слушать', listenA: 'Прочитать задачу вслух', heroes: 'Настоящие герои не сдаются. Попробуй ещё раз, друзья ждут!', again: 'Снова в путь',
+      wait: 'Море подождёт. Кит тоже.', next: 'Дальше', toMap: 'На карту', claim: 'Забрать приз', replay: 'Ещё раз'
+    },
+    worlds: {
+      whale: { name: 'Кит на удочке', mark: 'кит', brief: 'Беги к китобоям и развяжи верёвку', say: 'Спаси кита от китобоев!', tip: 'Щит спасает от одного укуса.', taskName: 'Узел', taskDo: 'развяжи верёвку', freed: 'Кит свободен!', prize: 'Кубок Спасителя Китов', done: 'Кит спасён', gateSay: ['Верно! Плыви дальше, там китобои!', 'Верно! Кит совсем близко!'] },
+      storm: { name: 'Черепашата в шторм', mark: 'маяк', brief: 'Собери 4 плотика с черепашатами и зажги маяк', say: 'Собери 4 плотика с черепашатами!', tip: 'Когда мигает молния, ныряй!', taskName: 'Лампа', taskDo: 'зажги маяк', freed: 'Маяк горит! Все дома!', prize: 'Кубок Хранителя Маяка', done: 'Черепашата спасены', gateSay: ['Верно! Шторм всё сильнее, держись!', 'Верно! Уже виден берег!'] },
+      ice: { name: 'Ледяная клетка', mark: 'клетка', brief: 'Найди 3 золотых ключа и открой клетку', say: 'Найди 3 золотых ключа!', tip: 'Вода ледяная: под водой сила тает быстрее.', taskName: 'Замок', taskDo: 'открой клетку', freed: 'Пингвинята на свободе!', prize: 'Кубок Друга Пингвинов', done: 'Пингвинята спасены', gateSay: ['Верно! Ищи следующий ключ!', 'Верно! Клетка уже близко!'] },
+      cave: { name: 'Пещера осьминога', mark: 'выход', brief: 'Убеги от гигантского осьминога к выходу', say: 'Беги! Осьминог за тобой!', tip: 'Каждый удар подпускает щупальца ближе.', taskName: 'Камень', taskDo: 'разбери завал', freed: 'Выход открыт!', prize: 'Кубок Смелого Беглеца', done: 'Ты убежал от осьминога', gateSay: ['Верно! Щупальца отстали!', 'Верно! Впереди свет!'] },
+      pirate: { name: 'Пиратский остров', mark: 'пираты', brief: 'Доберись до пиратов и подбей корабль примерами', say: 'Вперёд, на пиратов!', tip: 'Каждый верный ответ это выстрел из пушки.', taskName: 'Выстрел', taskDo: 'реши и стреляй', freed: 'Пираты сбежали!', prize: 'Кубок Адмирала Морей', done: 'Пираты побеждены', gateSay: ['Верно! Пушки уже рядом!', 'Верно! Вижу чёрный флаг!'] }
+    },
+    heroes: {
+      runner: ['Бегун', 'Ботинки заряжаются быстрее'], diver: ['Ныряльщица', 'Под водой почти не устаёт'], robot: ['Робот Болтик', 'Четыре сердца вместо трёх'],
+      penguin: ['Пингвин Пип', 'Под водой не устаёт, но летает хуже'], cat: ['Кот Мур', 'Притягивает жемчуг и начинает со щитом'], dragon: ['Дракончик', 'Летает очень долго']
+    },
+    caught: {
+      croc: 'Клац! Крокодил тебя поймал', hook: 'Попался на крючок китобоев', shark: 'Ам! Акула тебя поймала', bolt: 'Бах! В тебя попала молния',
+      barrel: 'Бум! Бочка сбила тебя', jelly: 'Ай! Медуза ужалила', berg: 'Бух! Ты врезался в айсберг', orca: 'Ам! Косатка тебя поймала', snow: 'Бац! Снежок сбил тебя',
+      stal: 'Ой! На тебя упала сосулька из камня', eel: 'Ай! Угорь ударил током', puffer: 'Ой! Рыба-ёж уколола', ball: 'Бах! Попало ядро', mine: 'Бум! Ты задел мину', parrot: 'Ай! Попугай клюнул'
+    },
+    buoy: n => `Буй ${n} из 2: черепаха-сторож открывает путь`, of: 'из', metres: 'м', almost: 'Почти!',
+    locked: 'Сначала пройди прошлое море', after: n => `После моря ${n}`, award: (who, s) => `Награждается ${who}: ${s}`,
+    savedM: (a, b) => `Русалки спасены: ${a} из ${b}`, pearlsOf: (a, b) => `Жемчуг: ${a} из ${b}`, clean: 'Все задачи решены с первого раза', mistakes: n => `Ошибок в задачах: ${n}`,
+    newHero: n => `Новый герой: ${n}!`, allSeas: 'Все моря пройдены! Попробуй собрать все звёзды.',
+    shieldUsed: 'Щит спас тебя!', noForce: 'Сила кончилась. Беги по воде, она вернётся!', gotShield: 'Круглый щит у тебя!', mermaid: 'Русалка спасена! Она поёт, и хищники убегают!',
+    turtles: 'черепашат!', key: (a, b) => `Ключ ${a} из ${b}!`, dive: 'Ныряй!', cantHit: 'Не попадёшь!', flee: 'Спасайся!', dinner: 'Сегодня на ужин кит!', dinnerGone: 'Наш ужин уплыл!',
+    tut: ['Держи вверх, и ботинки полетят', 'Держи вниз, и ты нырнёшь за щитом', 'Отпусти, и ты побежишь по воде'],
+    scenes: [['В', 'ракушках', 'жемчужины', 'жемчужин', 1], ['На', 'лодках', 'гарпуна', 'гарпунов'], ['В', 'сундуках', 'монеты', 'монет', 1], ['В', 'сетях', 'рыбы', 'рыб', 1], ['У', 'крокодилов', 'зуба', 'зубов']],
+    groupsOf: ['', '', 'двух', 'трёх', 'четырёх', 'пяти', 'шести', 'семи', 'восьми', 'девяти', 'десяти', 'одиннадцати', 'двенадцати'], twoF: 'две', howMany: 'Сколько всего?',
+    t: {
+      short: c => `${c}. Как записать короче?`, shortHint: b => `Сосчитай, сколько раз повторяется ${b}.`, same: (a, b) => `Что равно ${a} × ${b}?`,
+      sameHint: (a, b) => `${a} × ${b} это ${a} lots of ${b}: ${a} ${a < 5 ? 'группы' : 'групп'} по ${b}.`, sumHint: 'Складывай по одной группе.',
+      up: b => `Вперёд по ${b}`, upHint: b => `Прибавь ${b} к последнему числу.`, down: b => `Назад по ${b}`, downHint: b => `Отними ${b} от последнего числа.`,
+      fish: (n, b) => `Рыб: ${n}. Акула ест по ${b}. Сколько раз?`, pearls: (n, b) => `Жемчужин: ${n}. Русалке по ${b}. На сколько русалок?`,
+      shareHint: (n, b) => `Отнимай по ${b}, пока не получишь 0: ${n} − ${b} − ${b} − … Считай, сколько раз отнял.`,
+      fishVoice: (n, b) => `Рыб в стае ${n}. Акула за раз съедает ${b}. Сколько раз она поест, пока рыбы не кончатся?`, pearlsVoice: (n, b) => `Жемчужин у тебя ${n}. Каждой русалке даёшь ${b}. На сколько русалок хватит?`,
+      gapHint: (n, b) => `Прибавляй по ${b}, пока не получишь ${n}. Считай, сколько раз прибавил.`,
+      more: 'Ещё одна группа', moreHint: (n, b) => `Прибавь одну группу: ${n} + ${b} = ?`, moreVoice: b => `Добавь ещё одну группу по ${b}.`,
+      less: 'Одной группы нет', lessHint: (n, b) => `Отними одну группу: ${n} − ${b} = ?`, lessVoice: b => `Убери одну группу по ${b}.`,
+      much: (a, b) => `Сколько будет ${a} × ${b}?`, double: 'Удвой', doubleHint: n => `Удвой ответ: ${n} + ${n} = ?`, doubleVoice: 'Восьмёрка это две четвёрки.'
+    },
+    spoken: { lots: (x, y) => `${x} ${x > 1 && x < 5 ? 'раза' : 'раз'} по ${y}`, findTimes: 'сколько умножить на ', times: ' умножить на ', plus: ' плюс ', minus: ' минус ', isWhat: ' равно сколько?', is: ' равно ', then: ', а дальше?', andSo: ' и так далее.' }
+  },
+  uk: {
+    ui: {
+      sea: 'Море, яким біжить герой у летючих черевиках', hearts: 'Життя', shieldsT: 'Круглі щити', pearlsT: 'Перли', forceT: 'Сила черевиків', force: 'Сила',
+      sound: 'Звук', soundOff: 'Без звуку', pause: 'Пауза', lead: 'П’ять морів, п’ять різних пригод. Взувай летючі черевики, біжи по воді, розв’язуй приклади й рятуй друзів!',
+      up: 'Вгору', upHow: 'Стрілка ↑ або верх екрана: лети над водою', down: 'Вниз', downHow: 'Стрілка ↓ або низ екрана: пірнай по круглі щити', free: 'Відпусти', freeHow: 'Біжи по воді, черевики знову зарядяться',
+      perks: 'Круглий щит врятує від одного удару. Нові герої відкриваються за пройдені моря.', who: 'Як звати героя?', whoPh: 'Напиши ім’я',
+      diff: 'Яка пригода?', diffA: 'Складність', d0: 'Легка', d1: 'Смілива', d2: 'Капітанська', dNote: 'Легка: ×2, ×3, ×5, ×10. Смілива: ×3, ×4, ×8 до 10. Капітанська: ×3, ×4, ×8 до 12.',
+      boots: 'Які черевики?', bootsA: 'Колір черевиків', b0: 'Вогонь', b1: 'Сонце', b2: 'Хвиля', voice: 'Читати задачі вголос', noVoice: 'На цьому пристрої немає українського голосу, задачі будуть лише текстом.',
+      where: 'Куди біжимо?', runner: 'Хто біжить?', back: 'Назад', listen: 'Слухати', listenA: 'Прочитати задачу вголос', heroes: 'Справжні герої не здаються. Спробуй ще раз, друзі чекають!', again: 'Знову в дорогу',
+      wait: 'Море зачекає. Кит теж.', next: 'Далі', toMap: 'На карту', claim: 'Забрати приз', replay: 'Ще раз'
+    },
+    worlds: {
+      whale: { name: 'Кит на вудці', mark: 'кит', brief: 'Біжи до китобоїв і розв’яжи мотузку', say: 'Врятуй кита від китобоїв!', tip: 'Щит рятує від одного укусу.', taskName: 'Вузол', taskDo: 'розв’яжи мотузку', freed: 'Кит вільний!', prize: 'Кубок Рятівника Китів', done: 'Кита врятовано', gateSay: ['Правильно! Пливи далі, там китобої!', 'Правильно! Кит уже зовсім близько!'] },
+      storm: { name: 'Черепашата у шторм', mark: 'маяк', brief: 'Збери 4 плотики з черепашатами й запали маяк', say: 'Збери 4 плотики з черепашатами!', tip: 'Коли блимає блискавка, пірнай!', taskName: 'Лампа', taskDo: 'запали маяк', freed: 'Маяк горить! Усі вдома!', prize: 'Кубок Хранителя Маяка', done: 'Черепашат врятовано', gateSay: ['Правильно! Шторм дедалі сильніший, тримайся!', 'Правильно! Уже видно берег!'] },
+      ice: { name: 'Крижана клітка', mark: 'клітка', brief: 'Знайди 3 золоті ключі й відчини клітку', say: 'Знайди 3 золоті ключі!', tip: 'Вода крижана: під водою сила тане швидше.', taskName: 'Замок', taskDo: 'відчини клітку', freed: 'Пінгвінята на волі!', prize: 'Кубок Друга Пінгвінів', done: 'Пінгвінят врятовано', gateSay: ['Правильно! Шукай наступний ключ!', 'Правильно! Клітка вже близько!'] },
+      cave: { name: 'Печера восьминога', mark: 'вихід', brief: 'Утечи від гігантського восьминога до виходу', say: 'Біжи! Восьминіг за тобою!', tip: 'Кожен удар підпускає щупальця ближче.', taskName: 'Камінь', taskDo: 'розбери завал', freed: 'Вихід відкрито!', prize: 'Кубок Сміливого Втікача', done: 'Ти втік від восьминога', gateSay: ['Правильно! Щупальця відстали!', 'Правильно! Попереду світло!'] },
+      pirate: { name: 'Піратський острів', mark: 'пірати', brief: 'Дістанься до піратів і підбий корабель прикладами', say: 'Уперед, на піратів!', tip: 'Кожна правильна відповідь це постріл із гармати.', taskName: 'Постріл', taskDo: 'розв’яжи й стріляй', freed: 'Пірати втекли!', prize: 'Кубок Адмірала Морів', done: 'Піратів переможено', gateSay: ['Правильно! Гармати вже поруч!', 'Правильно! Бачу чорний прапор!'] }
+    },
+    heroes: {
+      runner: ['Бігун', 'Черевики заряджаються швидше'], diver: ['Пірнальниця', 'Під водою майже не втомлюється'], robot: ['Робот Болтик', 'Чотири серця замість трьох'],
+      penguin: ['Пінгвін Піп', 'Під водою не втомлюється, але літає гірше'], cat: ['Кіт Мур', 'Притягує перли й починає зі щитом'], dragon: ['Дракончик', 'Літає дуже довго']
+    },
+    caught: {
+      croc: 'Клац! Крокодил тебе спіймав', hook: 'Потрапив на гачок китобоїв', shark: 'Ам! Акула тебе спіймала', bolt: 'Бах! У тебе влучила блискавка',
+      barrel: 'Бум! Бочка збила тебе', jelly: 'Ай! Медуза вжалила', berg: 'Бух! Ти врізався в айсберг', orca: 'Ам! Косатка тебе спіймала', snow: 'Бац! Сніжка збила тебе',
+      stal: 'Ой! На тебе впала кам’яна бурулька', eel: 'Ай! Вугор ударив струмом', puffer: 'Ой! Риба-їжак уколола', ball: 'Бах! Влучило ядро', mine: 'Бум! Ти зачепив міну', parrot: 'Ай! Папуга дзьобнув'
+    },
+    buoy: n => `Буй ${n} з 2: черепаха-сторож відкриває шлях`, of: 'з', metres: 'м', almost: 'Майже!',
+    locked: 'Спочатку пройди попереднє море', after: n => `Після моря ${n}`, award: (who, s) => `Нагороду отримує ${who}: ${s}`,
+    savedM: (a, b) => `Русалок врятовано: ${a} з ${b}`, pearlsOf: (a, b) => `Перли: ${a} з ${b}`, clean: 'Усі задачі розв’язано з першого разу', mistakes: n => `Помилок у задачах: ${n}`,
+    newHero: n => `Новий герой: ${n}!`, allSeas: 'Усі моря пройдено! Спробуй зібрати всі зірки.',
+    shieldUsed: 'Щит врятував тебе!', noForce: 'Сила скінчилася. Біжи по воді, вона повернеться!', gotShield: 'Круглий щит у тебе!', mermaid: 'Русалку врятовано! Вона співає, і хижаки тікають!',
+    turtles: 'черепашат!', key: (a, b) => `Ключ ${a} з ${b}!`, dive: 'Пірнай!', cantHit: 'Не влучиш!', flee: 'Рятуйся!', dinner: 'Сьогодні на вечерю кит!', dinnerGone: 'Наша вечеря втекла!',
+    tut: ['Тримай вгору, і черевики полетять', 'Тримай вниз, і ти пірнеш по щит', 'Відпусти, і ти побіжиш по воді'],
+    scenes: [['У', 'мушлях', 'перлини', 'перлин', 1], ['На', 'човнах', 'гарпуни', 'гарпунів'], ['У', 'скринях', 'монети', 'монет', 1], ['У', 'сітях', 'риби', 'риб', 1], ['У', 'крокодилів', 'зуби', 'зубів']],
+    groupsOf: ['', '', 'двох', 'трьох', 'чотирьох', 'п’яти', 'шести', 'семи', 'восьми', 'дев’яти', 'десяти', 'одинадцяти', 'дванадцяти'], twoF: 'дві', howMany: 'Скільки всього?',
+    t: {
+      short: c => `${c}. Як записати коротше?`, shortHint: b => `Порахуй, скільки разів повторюється ${b}.`, same: (a, b) => `Чому дорівнює ${a} × ${b}?`,
+      sameHint: (a, b) => `${a} × ${b} це ${a} lots of ${b}: ${a} ${a < 5 ? 'групи' : 'груп'} по ${b}.`, sumHint: 'Додавай по одній групі.',
+      up: b => `Уперед по ${b}`, upHint: b => `Додай ${b} до останнього числа.`, down: b => `Назад по ${b}`, downHint: b => `Відніми ${b} від останнього числа.`,
+      fish: (n, b) => `Риб: ${n}. Акула їсть по ${b}. Скільки разів?`, pearls: (n, b) => `Перлин: ${n}. Русалці по ${b}. На скільки русалок?`,
+      shareHint: (n, b) => `Віднімай по ${b}, поки не отримаєш 0: ${n} − ${b} − ${b} − … Рахуй, скільки разів відняв.`,
+      fishVoice: (n, b) => `Риб у зграї ${n}. Акула за раз з’їдає ${b}. Скільки разів вона поїсть, поки риби не скінчаться?`, pearlsVoice: (n, b) => `Перлин у тебе ${n}. Кожній русалці даєш ${b}. На скільки русалок вистачить?`,
+      gapHint: (n, b) => `Додавай по ${b}, поки не отримаєш ${n}. Рахуй, скільки разів додав.`,
+      more: 'Ще одна група', moreHint: (n, b) => `Додай одну групу: ${n} + ${b} = ?`, moreVoice: b => `Додай ще одну групу по ${b}.`,
+      less: 'Однієї групи немає', lessHint: (n, b) => `Відніми одну групу: ${n} − ${b} = ?`, lessVoice: b => `Прибери одну групу по ${b}.`,
+      much: (a, b) => `Скільки буде ${a} × ${b}?`, double: 'Подвій', doubleHint: n => `Подвій відповідь: ${n} + ${n} = ?`, doubleVoice: 'Вісімка це дві четвірки.'
+    },
+    spoken: { lots: (x, y) => `${x} ${x > 1 && x < 5 ? 'рази' : 'разів'} по ${y}`, findTimes: 'скільки помножити на ', times: ' помножити на ', plus: ' плюс ', minus: ' мінус ', isWhat: ' дорівнює скільки?', is: ' дорівнює ', then: ', а далі?', andSo: ' і так далі.' }
+  }
 };
+let lang = 'ru', L = TEXT.ru;
 let world = WORLDS[0], hero = HEROES[0], stars = [];
 const wins = () => { let n = 0; while (n < WORLDS.length && stars[n]) n++; return n; };
-function saveMe() { try { localStorage.setItem('lgm-me', JSON.stringify({ heroName, diff, boots, hero: hero.id, voiceOn })); } catch (e) {} }
+function saveMe() { try { localStorage.setItem('lgm-me', JSON.stringify({ heroName, diff, boots, hero: hero.id, voiceOn, lang })); } catch (e) {} }
 function saveStars() { try { localStorage.setItem('lgm-stars', JSON.stringify(stars)); } catch (e) {} }
 
 let W = 960, H = 540, SEA = 248, T = 0, last = 0;
@@ -425,28 +514,46 @@ const fanfare = () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, 'tria
 
 /* ---------- voice: tasks must work for a child who does not read well yet ---------- */
 const synth = window.speechSynthesis || null;
-let voiceOn = true, ruVoice = null, spokenNow = '';
+let voiceOn = true, myVoice = null, spokenNow = '';
 function pickVoice() {
-  if (!synth) return;
-  const all = synth.getVoices();
-  ruVoice = all.find(v => /^ru/i.test(v.lang) && /google|milena|yuri|katya/i.test(v.name)) || all.find(v => /^ru/i.test(v.lang)) || null;
-  $('sayBtn').hidden = !ruVoice;
+  const all = synth ? synth.getVoices() : [], mine = all.filter(v => v.lang.toLowerCase().startsWith(lang));
+  myVoice = mine.find(v => /premium|enhanced|neural|natural|siri/i.test(v.name)) || mine.find(v => /google|milena|lesya|yuri|katya/i.test(v.name)) || mine[0] || null;
+  $('sayBtn').hidden = !myVoice;
+  $('noVoice').hidden = !!myVoice || (!!synth && !all.length);
 }
 if (synth) synth.addEventListener('voiceschanged', pickVoice);
-const aloud = t => t
-  .replace(/(\d+) lots of (\d+)/g, (m, x, y) => `${x} ${x > 1 && x < 5 ? 'раза' : 'раз'} по ${y}`)
-  .replace(/\? × /g, 'сколько умножить на ')
-  .replace(/ × /g, ' умножить на ').replace(/ \+ /g, ' плюс ').replace(/ − /g, ' минус ')
-  .replace(/ = \?/g, ' равно сколько?').replace(/ = /g, ' равно ').replace(/, \?/g, ', а дальше?').replace(/ …/g, '');
+const aloud = t => {
+  const v = L.spoken;
+  return t.replace(/’/g, "'")
+    .replace(/(\d+) lots of (\d+)/g, (m, x, y) => v.lots(+x, y))
+    .replace(/ − …/g, v.andSo)
+    .replace(/\? × /g, v.findTimes)
+    .replace(/ × /g, v.times).replace(/ \+ /g, v.plus).replace(/ − /g, v.minus)
+    .replace(/ = \?/g, v.isWhat).replace(/ = /g, v.is).replace(/, \?/g, v.then);
+};
 function speak(text, queue = false) {
-  if (!synth || !ruVoice) return;
+  if (!synth || !myVoice) return;
   if (!queue) synth.cancel();
   const u = new SpeechSynthesisUtterance(aloud(text));
-  u.voice = ruVoice; u.lang = ruVoice.lang; u.rate = .92;
+  u.voice = myVoice; u.lang = myVoice.lang; u.rate = .92;
   synth.speak(u);
 }
 const voiced = (text, queue) => { if (voiceOn && soundOn) speak(text, queue); };
 const hush = () => { if (synth) synth.cancel(); };
+
+function setLang(code) {
+  lang = code; L = TEXT[code];
+  document.documentElement.lang = code;
+  WORLDS.forEach(w => Object.assign(w, L.worlds[w.id]));
+  HEROES.forEach(h => { [h.name, h.perk] = L.heroes[h.id]; });
+  document.querySelectorAll('[data-t]').forEach(e => { e.textContent = L.ui[e.dataset.t]; });
+  document.querySelectorAll('[data-al]').forEach(e => e.setAttribute('aria-label', L.ui[e.dataset.al]));
+  document.querySelectorAll('[data-ti]').forEach(e => { e.title = L.ui[e.dataset.ti]; });
+  document.querySelectorAll('[data-ph]').forEach(e => { e.placeholder = L.ui[e.dataset.ph]; });
+  $('soundBtn').textContent = soundOn ? L.ui.sound : L.ui.soundOff;
+  const box = document.querySelector(`input[name=lang][value="${code}"]`); if (box) box.checked = true;
+  hush(); pickVoice();
+}
 
 /* ---------- screens and HUD ---------- */
 const SCREENS = ['menu', 'map', 'task', 'caught', 'pause', 'claim', 'win'];
@@ -463,10 +570,6 @@ function hud() {
 
 /* ---------- tasks: Year 3 multiplication built from adding and taking away ---------- */
 const LEVELS = [{ tables: [2, 5, 10, 3], most: 5 }, { tables: [3, 4, 8], most: 10 }, { tables: [3, 4, 8], most: 12 }];
-const SCENES = [
-  ['В', 'ракушках', 'жемчужины', 'жемчужин'], ['На', 'лодках', 'гарпуна', 'гарпунов'], ['В', 'сундуках', 'монеты', 'монет'],
-  ['В', 'сетях', 'рыбы', 'рыб'], ['У', 'крокодилов', 'зуба', 'зубов']
-];
 const any = list => list[R(0, list.length - 1)];
 const chain = (b, a) => Array(a).fill(b).join(' + ');
 const pair = (L, lo = 2, hi = L.most) => {
@@ -475,7 +578,8 @@ const pair = (L, lo = 2, hi = L.most) => {
   if (a === 2 && b === 2) a = 3;
   return { a, b, ab: a * b };
 };
-const scene = ({ a, b }) => { const [at, place, few, many] = any(SCENES); return `${at} ${a} ${place} по ${b} ${b < 5 ? few : many}. Сколько всего?`; };
+/* Spoken numbers are spelled out where the case changes: a voice engine reads "в 3 сетях" as "в три сетях". */
+const scene = ({ a, b }) => { const [at, place, few, many, fem] = any(L.scenes); return `${at} ${L.groupsOf[a]} ${place} по ${b === 2 && fem ? L.twoF : b} ${b < 5 ? few : many}. ${L.howMany}`; };
 const seen = (a, b) => a < 9 ? [a, b] : null;
 const slips = (a, b) => [a + b, (a + 1) * b, (a - 1) * b, a * (b + 1), a * (b - 1)];
 const wrongs = (right, ideas) => {
@@ -487,23 +591,23 @@ const num = (q, right, ideas, hint, more = {}) => ({ q, right: String(right), wr
 const word = (q, right, wrong, hint, more = {}) => ({ q, right, wrong, hint, ...more });
 
 const KINDS = {
-  short: L => { const { a, b } = pair(L, 2, 6); return word(`${chain(b, a)}. Как записать короче?`, `${a} × ${b}`, [`${a + 1} × ${b}`, `${a - 1} × ${b}`, `${a} + ${b}`], `Сосчитай, сколько раз повторяется ${b}.`, { pic: [a, b] }); },
-  same: L => { const { a, b } = pair(L, 3, 5); return word(`Что равно ${a} × ${b}?`, chain(b, a), [chain(b, a - 1), chain(b, a + 1), a === b ? chain(b, a + 2) : `${a} + ${b}`], `${a} × ${b} это ${a} lots of ${b}: ${a} ${a < 5 ? 'группы' : 'групп'} по ${b}.`, { help: [a, b] }); },
-  sum: L => { const f = pair(L, 2, 6); return num(`${chain(f.b, f.a)} = ?`, f.ab, slips(f.a, f.b), 'Складывай по одной группе.', { pic: [f.a, f.b], voice: `${scene(f)} ${chain(f.b, f.a)} = ?` }); },
-  times: L => { const f = pair(L); return num(`${f.a} × ${f.b} = ?`, f.ab, slips(f.a, f.b), `${f.a} lots of ${f.b}: ${chain(f.b, f.a)}`, { pic: seen(f.a, f.b), voice: `${scene(f)} ${f.a} × ${f.b} = ?` }); },
-  up: L => { const b = any(L.tables), k = R(1, L.most - 3); return num(`Вперёд по ${b}: ${k * b}, ${(k + 1) * b}, ${(k + 2) * b}, ?`, (k + 3) * b, [(k + 4) * b, (k + 2) * b, (k + 3) * b + 1, (k + 3) * b - 1], `Прибавь ${b} к последнему числу.`); },
-  down: L => { const b = any(L.tables), k = R(1, L.most - 3); return num(`Назад по ${b}: ${(k + 3) * b}, ${(k + 2) * b}, ${(k + 1) * b}, ?`, k * b, [(k + 2) * b, (k - 1) * b, k * b + 1, k * b - 1], `Отними ${b} от последнего числа.`); },
-  share: L => {
-    const { a, b, ab } = pair(L), fish = Math.random() < .5;
-    return num(fish ? `Рыб: ${ab}. Акула ест по ${b}. Сколько раз?` : `Жемчужин: ${ab}. Русалке по ${b}. На сколько русалок?`, a, [a + 1, a - 1, b, a + 2], `Отнимай по ${b}, пока не получишь 0: ${ab} − ${b} − ${b} − … Считай, сколько раз отнял.`, {
+  short: L2 => { const { a, b } = pair(L2, 2, 6); return word(L.t.short(chain(b, a)), `${a} × ${b}`, [`${a + 1} × ${b}`, `${a - 1} × ${b}`, `${a} + ${b}`], L.t.shortHint(b), { pic: [a, b] }); },
+  same: L2 => { const { a, b } = pair(L2, 3, 5); return word(L.t.same(a, b), chain(b, a), [chain(b, a - 1), chain(b, a + 1), a === b ? chain(b, a + 2) : `${a} + ${b}`], L.t.sameHint(a, b), { help: [a, b] }); },
+  sum: L2 => { const f = pair(L2, 2, 6); return num(`${chain(f.b, f.a)} = ?`, f.ab, slips(f.a, f.b), L.t.sumHint, { pic: [f.a, f.b], voice: `${scene(f)} ${chain(f.b, f.a)} = ?` }); },
+  times: L2 => { const f = pair(L2); return num(`${f.a} × ${f.b} = ?`, f.ab, slips(f.a, f.b), `${f.a} lots of ${f.b}: ${chain(f.b, f.a)}`, { pic: seen(f.a, f.b), voice: `${scene(f)} ${f.a} × ${f.b} = ?` }); },
+  up: L2 => { const b = any(L2.tables), k = R(1, L2.most - 3); return num(`${L.t.up(b)}: ${k * b}, ${(k + 1) * b}, ${(k + 2) * b}, ?`, (k + 3) * b, [(k + 4) * b, (k + 2) * b, (k + 3) * b + 1, (k + 3) * b - 1], L.t.upHint(b)); },
+  down: L2 => { const b = any(L2.tables), k = R(1, L2.most - 3); return num(`${L.t.down(b)}: ${(k + 3) * b}, ${(k + 2) * b}, ${(k + 1) * b}, ?`, k * b, [(k + 2) * b, (k - 1) * b, k * b + 1, k * b - 1], L.t.downHint(b)); },
+  share: L2 => {
+    const { a, b, ab } = pair(L2), fish = Math.random() < .5;
+    return num(fish ? L.t.fish(ab, b) : L.t.pearls(ab, b), a, [a + 1, a - 1, b, a + 2], L.t.shareHint(ab, b), {
       pic: a < 9 ? [1, ab, 12] : null, help: seen(a, b),
-      voice: fish ? `Рыб в стае ${ab}. Акула за раз съедает ${b}. Сколько раз она поест, пока рыбы не кончатся?` : `Жемчужин у тебя ${ab}. Каждой русалке даёшь ${b}. На сколько русалок хватит?`
+      voice: fish ? L.t.fishVoice(ab, b) : L.t.pearlsVoice(ab, b)
     });
   },
-  gap: L => { const { a, b, ab } = pair(L); return num(`? × ${b} = ${ab}`, a, [a + 1, a - 1, b, a + 2], `Прибавляй по ${b}, пока не дойдёшь до ${ab}. Считай, сколько раз прибавил.`, { help: seen(a, b) }); },
-  more: L => { const { a, b, ab } = pair(L, 2, L.most - 1); return num(`${a} × ${b} = ${ab}. Ещё одна группа: ${a + 1} × ${b} = ?`, ab + b, [ab + 1, ab, ab + 2 * b, ab + b + 1], `Прибавь одну группу: ${ab} + ${b} = ?`, { pic: seen(a + 1, b), voice: `${a} × ${b} = ${ab}. Добавь ещё одну группу по ${b}. Сколько будет ${a + 1} × ${b}?` }); },
-  less: L => { const { a, b, ab } = pair(L, 3); return num(`${a} × ${b} = ${ab}. Одной группы нет: ${a - 1} × ${b} = ?`, ab - b, [ab - 1, ab, ab - 2 * b, ab - b + 1], `Отними одну группу: ${ab} − ${b} = ?`, { pic: seen(a - 1, b), voice: `${a} × ${b} = ${ab}. Убери одну группу по ${b}. Сколько будет ${a - 1} × ${b}?` }); },
-  double: L => { const a = R(2, L.most), four = 4 * a; return num(`4 × ${a} = ${four}. Удвой: 8 × ${a} = ?`, 2 * four, [four, 2 * four + 8, 2 * four - 8, 2 * four + 1], `Удвой ответ: ${four} + ${four} = ?`, { voice: `4 × ${a} = ${four}. Восьмёрка это две четвёрки. Сколько будет 8 × ${a}?` }); }
+  gap: L2 => { const { a, b, ab } = pair(L2); return num(`? × ${b} = ${ab}`, a, [a + 1, a - 1, b, a + 2], L.t.gapHint(ab, b), { help: seen(a, b) }); },
+  more: L2 => { const { a, b, ab } = pair(L2, 2, L2.most - 1); return num(`${a} × ${b} = ${ab}. ${L.t.more}: ${a + 1} × ${b} = ?`, ab + b, [ab + 1, ab, ab + 2 * b, ab + b + 1], L.t.moreHint(ab, b), { pic: seen(a + 1, b), voice: `${a} × ${b} = ${ab}. ${L.t.moreVoice(b)} ${L.t.much(a + 1, b)}` }); },
+  less: L2 => { const { a, b, ab } = pair(L2, 3); return num(`${a} × ${b} = ${ab}. ${L.t.less}: ${a - 1} × ${b} = ?`, ab - b, [ab - 1, ab, ab - 2 * b, ab - b + 1], L.t.lessHint(ab, b), { pic: seen(a - 1, b), voice: `${a} × ${b} = ${ab}. ${L.t.lessVoice(b)} ${L.t.much(a - 1, b)}` }); },
+  double: L2 => { const a = R(2, L2.most), four = 4 * a; return num(`4 × ${a} = ${four}. ${L.t.double}: 8 × ${a} = ?`, 2 * four, [four, 2 * four + 8, 2 * four - 8, 2 * four + 1], L.t.doubleHint(four), { voice: `4 × ${a} = ${four}. ${L.t.doubleVoice} ${L.t.much(8, a)}` }); }
 };
 const PLAN = [
   ['short', 'same', 'sum', 'times', 'up', 'share', 'more'],
@@ -545,10 +649,10 @@ function ask(kicker, solved) {
         show(null); solved();
       } else {
         G.misses++; b.disabled = true;
-        $('taskHint').textContent = `Почти! ${t.hint}`;
+        $('taskHint').textContent = `${L.almost} ${t.hint}`;
         drawGroups(t.help || t.pic);
         tone(180, .18, 'square', .04);
-        voiced(`Почти! ${t.hint}`);
+        voiced(`${L.almost} ${t.hint}`);
       }
     });
     box.appendChild(b);
@@ -591,7 +695,7 @@ function renderMap() {
     b.type = 'button'; b.className = 'lvl'; b.disabled = i > open;
     n.textContent = i + 1;
     t.textContent = w.name;
-    const sub = document.createElement('small'); sub.textContent = i > open ? 'Сначала пройди прошлое море' : w.brief; t.appendChild(sub);
+    const sub = document.createElement('small'); sub.textContent = i > open ? L.locked : w.brief; t.appendChild(sub);
     s.textContent = i > open ? '' : '★'.repeat(stars[i] || 0) + '☆'.repeat(3 - (stars[i] || 0));
     b.append(n, t, s);
     b.addEventListener('click', () => start(i));
@@ -603,7 +707,7 @@ function renderMap() {
     const b = document.createElement('button'), pic = document.createElement('canvas'), t = document.createElement('span');
     b.type = 'button'; b.className = 'who'; b.disabled = h.after > open; b.setAttribute('aria-pressed', h === hero);
     pic.width = pic.height = 128; pic.setAttribute('aria-hidden', 'true');
-    t.textContent = h.after > open ? `После моря ${h.after}` : h.name;
+    t.textContent = h.after > open ? L.after(h.after) : h.name;
     b.append(pic, t);
     b.addEventListener('click', () => { hero = h; saveMe(); renderMap(); });
     row.appendChild(b);
@@ -623,7 +727,7 @@ function portrait(pic, h, locked) {
 
 function caught() {
   G.mode = 'caught'; input.up = input.down = false;
-  $('caughtTitle').textContent = CAUGHT[G.lastBy] || CAUGHT.shark;
+  $('caughtTitle').textContent = L.caught[G.lastBy] || L.caught.shark;
   tone(220, .5, 'sawtooth', .07, 70);
   voiced($('caughtTitle').textContent);
   show('caught');
@@ -641,7 +745,7 @@ function respawn() {
 
 function reachGate(e) {
   G.mode = 'gate'; G.speed = 0; input.up = input.down = false;
-  ask(`Буй ${e.n + 1} из 2: черепаха-сторож открывает путь`, () => {
+  ask(L.buoy(e.n + 1), () => {
     e.open = true; G.checkpoint = gates()[e.n] || 0; G.gate = e.n + 1;
     G.mode = 'play'; G.speed = G.base; G.force = 100;
     say(world.gateSay[e.n]);
@@ -655,7 +759,7 @@ function enterFinal() {
 
 function nextKnot() {
   const F = G.final;
-  ask(`${world.taskName} ${world.tasks + 1 - F.knots} из ${world.tasks}: ${world.taskDo}`, () => {
+  ask(`${world.taskName} ${world.tasks + 1 - F.knots} ${L.of} ${world.tasks}: ${world.taskDo}`, () => {
     F.knots--;
     const k = world.id === 'whale' ? knotPoint(F.knots / 2.6 + .2) : { x: goalPos().x, y: SEA - 90 };
     burst(k.x, k.y, 'spark', 16);
@@ -673,11 +777,11 @@ function showWin() {
   const got = 1 + second + noMiss;
   stars[n] = Math.max(stars[n] || 0, got); saveStars();
   $('prizeName').textContent = world.prize;
-  $('winName').textContent = `Награждается ${heroName || hero.name}: ${'★'.repeat(got)}${'☆'.repeat(3 - got)}`;
+  $('winName').textContent = L.award(heroName || hero.name, '★'.repeat(got) + '☆'.repeat(3 - got));
   const items = [
     [true, world.done],
-    [second, friends ? `Русалки спасены: ${G.saved} из ${friends}` : `Жемчуг: ${G.pearls} из 15`],
-    [noMiss, noMiss ? 'Все задачи решены с первого раза' : `Ошибок в задачах: ${G.misses}`]
+    [second, friends ? L.savedM(G.saved, friends) : L.pearlsOf(G.pearls, 15)],
+    [noMiss, noMiss ? L.clean : L.mistakes(G.misses)]
   ];
   const ul = $('checks'); ul.textContent = '';
   items.forEach(([ok, text]) => {
@@ -686,7 +790,7 @@ function showWin() {
     li.append(i, text); ul.appendChild(li);
   });
   const fresh2 = HEROES.find(h => h.after === wins() && wins() > was);
-  $('winNote').textContent = fresh2 ? `Новый герой: ${fresh2.name}!` : wins() === WORLDS.length ? 'Все моря пройдены! Попробуй собрать все звёзды.' : '';
+  $('winNote').textContent = fresh2 ? L.newHero(fresh2.name) : wins() === WORLDS.length ? L.allSeas : '';
   const next = n + 1 < WORLDS.length;
   $('nextBtn').hidden = !next;
   $('hud').hidden = true; show('win');
@@ -790,7 +894,7 @@ function hurt(by) {
   G.lastBy = by;
   if (G.shields > 0) {
     G.shields--; G.inv = 1.1; burst(p.x, p.y, 'spark', 20);
-    tone(880, .15, 'triangle', .08, 440); say('Щит спас тебя!');
+    tone(880, .15, 'triangle', .08, 440); say(L.shieldUsed);
   } else {
     G.hearts--; G.inv = 1.8; G.shake = 10; burst(p.x, p.y, 'bubble', 14);
     tone(160, .25, 'sawtooth', .07, 80);
@@ -809,7 +913,7 @@ function updatePlayer(dt) {
   const air = p.y < SEA - 44, under = p.y > SEA + 4;
   if (air) G.force -= 21 * hero.fly * dt; else if (under) G.force -= 15 * hero.dive * world.cold * dt; else G.force += 34 * hero.charge * dt;
   G.force = clamp(G.force, 0, 100);
-  if (G.force <= 0 && !G.locked) { G.locked = true; say('Сила кончилась. Беги по воде, она вернётся!'); }
+  if (G.force <= 0 && !G.locked) { G.locked = true; say(L.noForce); }
   if (G.locked && G.force > 30) G.locked = false;
 
   if (air) { if (Math.random() < .5) puff(p.x - 12, p.y + 26, 'jet', -100, rnd(40, 110)); }
@@ -832,7 +936,7 @@ function updateEnts(dt) {
         if (near(e.x, e.y, 36)) {
           e.dead = true; G.shields = Math.min(3, G.shields + 1); hud();
           burst(e.x, e.y, 'spark', 14); tone(520, .1, 'triangle', .08); tone(780, .16, 'triangle', .08, 0, .08);
-          say('Круглый щит у тебя!');
+          say(L.gotShield);
         }
         break;
       case 'croc':
@@ -875,7 +979,7 @@ function updateEnts(dt) {
             e.safe = true; G.saved++; G.rescued[e.i] = true; G.song = 7; G.hearts = Math.min(G.max, G.hearts + 1); hud();
             burst(e.x, e.y, 'note', 14);
             [660, 784, 988, 1175].forEach((f, i) => tone(f, .28, 'sine', .07, 0, i * .14));
-            say('Русалка спасена! Она поёт, и хищники убегают!', 3.2);
+            say(L.mermaid, 3.2);
           } else if (!song && hitBox(e.sx - 42, e.sy - 13, e.sx + 42, e.sy + 13)) hurt('shark');
         }
         break;
@@ -884,7 +988,7 @@ function updateEnts(dt) {
         if (near(e.x, e.y, 52)) {
           e.dead = true; G.got += G.step; G.taken++; hud();
           burst(e.x, e.y, 'spark', 16); tone(660, .12, 'triangle', .08); tone(880, .18, 'triangle', .08, 0, .1);
-          say(world.item === 'raft' ? `${G.taken} × ${G.step} = ${G.got} черепашат!` : `Ключ ${G.got} из ${G.target}!`);
+          say(world.item === 'raft' ? `${G.taken} × ${G.step} = ${G.got} ${L.turtles}` : L.key(G.got, G.target));
         }
         break;
       case 'bolt':
@@ -983,7 +1087,7 @@ function update(dt) {
 
   const m = metres();
   $('me').style.left = (progress() * 100).toFixed(2) + '%';
-  $('left').textContent = world.goal === 'far' ? Math.max(0, Math.ceil((world.total - m) / 10) * 10) + ' м' : `${G.got} из ${G.target}`;
+  $('left').textContent = world.goal === 'far' ? `${Math.max(0, Math.ceil((world.total - m) / 10) * 10)} ${L.metres}` : `${G.got} ${L.of} ${G.target}`;
   const f = $('force'); f.style.width = G.force.toFixed(0) + '%'; f.classList.toggle('low', G.locked || G.force < 25);
   if (world.goal === 'far' ? m >= world.total : G.got >= G.target && G.gate >= 2) enterFinal();
 }
@@ -1225,7 +1329,7 @@ function drawBolt(e) {
   c.beginPath(); c.ellipse(e.x, 26, 62, 24, 0, 0, 6.3); c.fillStyle = 'rgba(30,40,62,.95)'; c.fill();
   if (e.st === 1 && Math.floor(T * 9) % 2) {
     c.beginPath(); c.moveTo(e.x, 50); c.lineTo(e.x, SEA); c.strokeStyle = SUN; c.lineWidth = 4; c.setLineDash([14, 14]); c.stroke(); c.setLineDash([]);
-    bubble(e.x, 96, 'Ныряй!');
+    bubble(e.x, 96, L.dive);
   }
   if (e.st === 2) {
     c.beginPath(); c.moveTo(e.x - 8, 40);
@@ -1558,8 +1662,8 @@ function drawFinal() {
   if (world.id !== 'whale') {
     const g = goalPos(), free = F.phase === 'free' || F.phase === 'prize';
     drawGoal(g.x, SEA + 8, g.s, F.knots, free);
-    if (world.id === 'pirate' && F.phase === 'knots') bubble(g.x - 70 * g.s, SEA - 250 * g.s, 'Не попадёшь!');
-    if (world.id === 'pirate' && F.phase === 'free') bubble(g.x - 70 * g.s, SEA - 250 * g.s, 'Спасайся!');
+    if (world.id === 'pirate' && F.phase === 'knots') bubble(g.x - 70 * g.s, SEA - 250 * g.s, L.cantHit);
+    if (world.id === 'pirate' && F.phase === 'free') bubble(g.x - 70 * g.s, SEA - 250 * g.s, L.flee);
     if (F.phase === 'prize') {
       const low = SEA - 100 * g.s, high = Math.max(170, SEA * .42);
       drawCup(g.x, low + (high - low) * F.cup, 1.5);
@@ -1577,8 +1681,8 @@ function drawFinal() {
     for (let i = 0; i < F.knots; i++) { const k = knotPoint(i / 2.6 + .2); circle(k.x, k.y, 12); fillInk(CORAL, 3); }
   }
   drawWhale(w.x, w.y, w.s, w.rot, F.knots > 0);
-  if (F.phase === 'knots') bubble(sh.x - 60 * sh.s, sh.y - 92 * sh.s, 'Сегодня на ужин кит!');
-  if (F.phase === 'free') bubble(sh.x - 60 * sh.s, sh.y - 92 * sh.s, 'Наш ужин уплыл!');
+  if (F.phase === 'knots') bubble(sh.x - 60 * sh.s, sh.y - 92 * sh.s, L.dinner);
+  if (F.phase === 'free') bubble(sh.x - 60 * sh.s, sh.y - 92 * sh.s, L.dinnerGone);
   if (F.phase === 'prize') {
     const low = w.y - 96 * w.s, high = Math.max(170, SEA * .42);
     drawCup(w.x - 30 * w.s, low + (high - low) * F.cup, 1.5);
@@ -1587,7 +1691,7 @@ function drawFinal() {
 
 function drawTutorial() {
   if (G.tut <= 0) return;
-  const lines = G.tut > 5.5 ? 'Держи вверх, и ботинки полетят' : G.tut > 3 ? 'Держи вниз, и ты нырнёшь за щитом' : 'Отпусти, и ты побежишь по воде';
+  const lines = L.tut[G.tut > 5.5 ? 0 : G.tut > 3 ? 1 : 2];
   if (lines !== G.tutLine) { G.tutLine = lines; voiced(lines, true); }
   c.globalAlpha = clamp(G.tut * 2, 0, 1);
   bubble(W / 2, SEA - 56, lines);
@@ -1679,7 +1783,7 @@ $('startForm').addEventListener('submit', e => {
   diff = +f.get('diff'); boots = f.get('boots');
   voiceOn = $('voiceBox').checked;
   saveMe();
-  if (synth && ruVoice) speak(' ');
+  if (myVoice) speak(' ');
   if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (err) {} }
   if (audio && audio.state === 'suspended') audio.resume();
   fanfare();
@@ -1695,9 +1799,10 @@ $('backBtn').addEventListener('click', () => show('menu'));
 $('replayBtn').addEventListener('click', () => start(WORLDS.indexOf(world)));
 $('nextBtn').addEventListener('click', () => start(WORLDS.indexOf(world) + 1));
 $('claimBtn').addEventListener('click', showWin);
+document.querySelectorAll('input[name=lang]').forEach(b => b.addEventListener('change', () => { setLang(b.value); saveMe(); }));
 $('soundBtn').addEventListener('click', e => {
   soundOn = !soundOn; e.target.setAttribute('aria-pressed', soundOn);
-  e.target.textContent = soundOn ? 'Звук' : 'Без звука';
+  e.target.textContent = soundOn ? L.ui.sound : L.ui.soundOff;
 });
 
 function restore() {
@@ -1708,17 +1813,20 @@ function restore() {
     const h = HEROES.find(q => q.id === s.hero);
     if (h && h.after <= wins()) hero = h;
     if (s.voiceOn === false) { voiceOn = false; $('voiceBox').checked = false; }
-    $('who').value = s.heroName || '';
+    heroName = s.heroName || ''; $('who').value = heroName;
+    if (s.diff !== undefined) diff = s.diff;
+    if (s.boots) boots = s.boots;
+    if (TEXT[s.lang]) setLang(s.lang);
     const d = document.querySelector(`input[name=diff][value="${s.diff}"]`); if (d) d.checked = true;
     const b = document.querySelector(`input[name=boots][value="${s.boots}"]`); if (b) b.checked = true;
   } catch (e) {}
 }
 
 G = fresh();
+setLang(/^ru/i.test(navigator.language) ? 'ru' : 'uk');
 new ResizeObserver(resize).observe(cv.parentElement);
 resize();
 restore();
-pickVoice();
 requestAnimationFrame(frame);
 })();
 </script>
