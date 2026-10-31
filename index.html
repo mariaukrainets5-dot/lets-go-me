@@ -91,10 +91,16 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
 #answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 #taskQ { font-family: var(--body); font-weight: 900; font-size: clamp(19px, 4.4vw, 23px); line-height: 1.2; }
 #task .card { gap: 8px; padding: 12px 16px; }
-#taskPic { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+#taskPic { display: flex; flex-wrap: wrap; gap: 8px; }
 #taskPic:empty { display: none; }
-#taskPic span { display: grid; grid-template-columns: repeat(var(--n), 9px); gap: 2px; }
-#taskPic i { width: 9px; height: 9px; border-radius: 50%; background: var(--sun); box-shadow: inset 0 0 0 1px var(--ink); }
+#taskPic span { display: grid; grid-template-columns: repeat(var(--n), 11px); gap: 3px; padding: 5px; background: #dff3f1; border: 2px solid var(--ink); border-radius: 9px; }
+#taskPic i { width: 11px; height: 11px; border-radius: 50%; background: var(--sun); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.taskTop { display: flex; align-items: flex-start; gap: 10px; }
+.taskTop #taskKicker { flex: 1; min-width: 0; }
+#sayBtn { flex: none; background: var(--sun); border: 3px solid var(--ink); border-radius: 10px; padding: 3px 10px; font-size: 14px; font-weight: 900; }
+#sayBtn[hidden] { display: none; }
+.tick { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; }
+.tick input { width: 20px; height: 20px; margin: 0; accent-color: var(--coral); }
 #taskKicker { font-size: 13px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: var(--coral); }
 #taskHint { min-height: 1.3em; font-size: 15px; font-weight: 800; color: var(--muted); }
 #claim { align-items: flex-end; justify-content: center; }
@@ -186,6 +192,7 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
           <label><input type="radio" name="boots" value="#4fd8a4"><span><i class="boot" style="background:#4fd8a4"></i>Волна</span></label>
         </div>
       </div>
+      <label class="tick"><input type="checkbox" id="voiceBox" checked>Читать задачи вслух</label>
       <button class="go" type="submit" id="startBtn">Let's go!</button>
     </form>
   </section>
@@ -203,11 +210,14 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 4.6vw
 
   <section class="screen low" id="task" hidden>
     <div class="card" role="dialog" aria-labelledby="taskQ">
-      <p id="taskKicker"></p>
+      <div class="taskTop">
+        <p id="taskKicker"></p>
+        <button id="sayBtn" type="button" aria-label="Прочитать задачу вслух">Слушать</button>
+      </div>
       <h2 id="taskQ"></h2>
+      <div id="taskPic" aria-hidden="true"></div>
       <div id="answers"></div>
       <p id="taskHint" role="status"></p>
-      <div id="taskPic" aria-hidden="true"></div>
     </div>
   </section>
 
@@ -336,7 +346,7 @@ const CAUGHT = {
 };
 let world = WORLDS[0], hero = HEROES[0], stars = [];
 const wins = () => { let n = 0; while (n < WORLDS.length && stars[n]) n++; return n; };
-function saveMe() { try { localStorage.setItem('lgm-me', JSON.stringify({ heroName, diff, boots, hero: hero.id })); } catch (e) {} }
+function saveMe() { try { localStorage.setItem('lgm-me', JSON.stringify({ heroName, diff, boots, hero: hero.id, voiceOn })); } catch (e) {} }
 function saveStars() { try { localStorage.setItem('lgm-stars', JSON.stringify(stars)); } catch (e) {} }
 
 let W = 960, H = 540, SEA = 248, T = 0, last = 0;
@@ -393,6 +403,31 @@ function tone(f, d = .12, type = 'sine', v = .07, to = 0, delay = 0) {
 }
 const fanfare = () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, 'triangle', .09, 0, i * .13));
 
+/* ---------- voice: tasks must work for a child who does not read well yet ---------- */
+const synth = window.speechSynthesis || null;
+let voiceOn = true, ruVoice = null, spokenNow = '';
+function pickVoice() {
+  if (!synth) return;
+  const all = synth.getVoices();
+  ruVoice = all.find(v => /^ru/i.test(v.lang) && /google|milena|yuri|katya/i.test(v.name)) || all.find(v => /^ru/i.test(v.lang)) || null;
+  $('sayBtn').hidden = !ruVoice;
+}
+if (synth) synth.addEventListener('voiceschanged', pickVoice);
+const aloud = t => t
+  .replace(/(\d+) lots of (\d+)/g, (m, x, y) => `${x} ${x > 1 && x < 5 ? 'раза' : 'раз'} по ${y}`)
+  .replace(/\? × /g, 'сколько умножить на ')
+  .replace(/ × /g, ' умножить на ').replace(/ \+ /g, ' плюс ').replace(/ − /g, ' минус ')
+  .replace(/ = \?/g, ' равно сколько?').replace(/ = /g, ' равно ').replace(/, \?/g, ', а дальше?').replace(/ …/g, '');
+function speak(text, queue = false) {
+  if (!synth || !ruVoice) return;
+  if (!queue) synth.cancel();
+  const u = new SpeechSynthesisUtterance(aloud(text));
+  u.voice = ruVoice; u.lang = ruVoice.lang; u.rate = .92;
+  synth.speak(u);
+}
+const voiced = (text, queue) => { if (voiceOn && soundOn) speak(text, queue); };
+const hush = () => { if (synth) synth.cancel(); };
+
 /* ---------- screens and HUD ---------- */
 const SCREENS = ['menu', 'map', 'task', 'caught', 'pause', 'claim', 'win'];
 function show(id) { SCREENS.forEach(s => { $(s).hidden = s !== id; }); }
@@ -421,30 +456,34 @@ const pair = (L, lo = 2, hi = L.most) => {
   return { a, b, ab: a * b };
 };
 const scene = ({ a, b }) => { const [at, place, few, many] = any(SCENES); return `${at} ${a} ${place} по ${b} ${b < 5 ? few : many}. Сколько всего?`; };
+const seen = (a, b) => a < 9 ? [a, b] : null;
 const slips = (a, b) => [a + b, (a + 1) * b, (a - 1) * b, a * (b + 1), a * (b - 1)];
 const wrongs = (right, ideas) => {
   const s = new Set(shuffle(ideas.filter(v => v > 0 && v !== right)).slice(0, 3));
   for (let d = 1; s.size < 3; d++) { if (right - d > 0) s.add(right - d); if (s.size < 3) s.add(right + d); }
   return [...s];
 };
-const num = (q, right, ideas, hint, pic) => ({ q, right: String(right), wrong: wrongs(right, ideas).map(String), hint, pic });
-const word = (q, right, wrong, hint, pic) => ({ q, right, wrong, hint, pic });
+const num = (q, right, ideas, hint, more = {}) => ({ q, right: String(right), wrong: wrongs(right, ideas).map(String), hint, ...more });
+const word = (q, right, wrong, hint, more = {}) => ({ q, right, wrong, hint, ...more });
 
 const KINDS = {
-  short: L => { const { a, b } = pair(L, 2, 6); return word(`${chain(b, a)}. Как записать короче?`, `${a} × ${b}`, [`${a + 1} × ${b}`, `${a - 1} × ${b}`, `${a} + ${b}`], `Сосчитай, сколько раз повторяется ${b}.`, [a, b]); },
-  same: L => { const { a, b } = pair(L, 3, 5); return word(`Что равно ${a} × ${b}?`, chain(b, a), [chain(b, a - 1), chain(b, a + 1), a === b ? chain(b, a + 2) : `${a} + ${b}`], `${a} × ${b} это ${a} lots of ${b}: ${a} ${a < 5 ? 'группы' : 'групп'} по ${b}.`, [a, b]); },
-  sum: L => { const f = pair(L, 2, 6); return num(`${scene(f)} ${chain(f.b, f.a)} = ?`, f.ab, slips(f.a, f.b), 'Складывай по одной группе.', [f.a, f.b]); },
-  times: L => { const f = pair(L); return num(scene(f), f.ab, slips(f.a, f.b), `${f.a} lots of ${f.b}: ${chain(f.b, f.a)}`, f.a < 7 ? [f.a, f.b] : null); },
-  up: L => { const b = any(L.tables), k = R(1, L.most - 3); return num(`Прыгай вперёд по ${b}: ${k * b}, ${(k + 1) * b}, ${(k + 2) * b}, ?`, (k + 3) * b, [(k + 4) * b, (k + 2) * b, (k + 3) * b + 1, (k + 3) * b - 1], `Прибавь ${b} к последнему числу.`); },
-  down: L => { const b = any(L.tables), k = R(1, L.most - 3); return num(`Прыгай назад по ${b}: ${(k + 3) * b}, ${(k + 2) * b}, ${(k + 1) * b}, ?`, k * b, [(k + 2) * b, (k - 1) * b, k * b + 1, k * b - 1], `Отними ${b} от последнего числа.`); },
+  short: L => { const { a, b } = pair(L, 2, 6); return word(`${chain(b, a)}. Как записать короче?`, `${a} × ${b}`, [`${a + 1} × ${b}`, `${a - 1} × ${b}`, `${a} + ${b}`], `Сосчитай, сколько раз повторяется ${b}.`, { pic: [a, b] }); },
+  same: L => { const { a, b } = pair(L, 3, 5); return word(`Что равно ${a} × ${b}?`, chain(b, a), [chain(b, a - 1), chain(b, a + 1), a === b ? chain(b, a + 2) : `${a} + ${b}`], `${a} × ${b} это ${a} lots of ${b}: ${a} ${a < 5 ? 'группы' : 'групп'} по ${b}.`, { help: [a, b] }); },
+  sum: L => { const f = pair(L, 2, 6); return num(`${chain(f.b, f.a)} = ?`, f.ab, slips(f.a, f.b), 'Складывай по одной группе.', { pic: [f.a, f.b], voice: `${scene(f)} ${chain(f.b, f.a)} = ?` }); },
+  times: L => { const f = pair(L); return num(`${f.a} × ${f.b} = ?`, f.ab, slips(f.a, f.b), `${f.a} lots of ${f.b}: ${chain(f.b, f.a)}`, { pic: seen(f.a, f.b), voice: `${scene(f)} ${f.a} × ${f.b} = ?` }); },
+  up: L => { const b = any(L.tables), k = R(1, L.most - 3); return num(`Вперёд по ${b}: ${k * b}, ${(k + 1) * b}, ${(k + 2) * b}, ?`, (k + 3) * b, [(k + 4) * b, (k + 2) * b, (k + 3) * b + 1, (k + 3) * b - 1], `Прибавь ${b} к последнему числу.`); },
+  down: L => { const b = any(L.tables), k = R(1, L.most - 3); return num(`Назад по ${b}: ${(k + 3) * b}, ${(k + 2) * b}, ${(k + 1) * b}, ?`, k * b, [(k + 2) * b, (k - 1) * b, k * b + 1, k * b - 1], `Отними ${b} от последнего числа.`); },
   share: L => {
-    const { a, b, ab } = pair(L), q = any([`Рыб в стае: ${ab}. Акула за раз съедает ${b}. Сколько раз она поест, пока рыбы не кончатся?`, `Жемчужин у тебя: ${ab}. Каждой русалке даёшь ${b}. На сколько русалок хватит?`]);
-    return num(q, a, [a + 1, a - 1, b, a + 2], `Отнимай по ${b}, пока не получишь 0: ${ab} − ${b} − ${b} − … Считай, сколько раз отнял.`);
+    const { a, b, ab } = pair(L), fish = Math.random() < .5;
+    return num(fish ? `Рыб: ${ab}. Акула ест по ${b}. Сколько раз?` : `Жемчужин: ${ab}. Русалке по ${b}. На сколько русалок?`, a, [a + 1, a - 1, b, a + 2], `Отнимай по ${b}, пока не получишь 0: ${ab} − ${b} − ${b} − … Считай, сколько раз отнял.`, {
+      pic: a < 9 ? [1, ab, 12] : null, help: seen(a, b),
+      voice: fish ? `Рыб в стае ${ab}. Акула за раз съедает ${b}. Сколько раз она поест, пока рыбы не кончатся?` : `Жемчужин у тебя ${ab}. Каждой русалке даёшь ${b}. На сколько русалок хватит?`
+    });
   },
-  gap: L => { const { a, b, ab } = pair(L); return num(`? × ${b} = ${ab}`, a, [a + 1, a - 1, b, a + 2], `Прибавляй по ${b}, пока не дойдёшь до ${ab}. Считай, сколько раз прибавил.`); },
-  more: L => { const { a, b, ab } = pair(L, 2, L.most - 1); return num(`${a} × ${b} = ${ab}. Добавь ещё одну группу по ${b}. Сколько будет ${a + 1} × ${b}?`, ab + b, [ab + 1, ab, ab + 2 * b, ab + b + 1], `Прибавь одну группу: ${ab} + ${b} = ?`, a < 6 ? [a + 1, b] : null); },
-  less: L => { const { a, b, ab } = pair(L, 3); return num(`${a} × ${b} = ${ab}. Убери одну группу по ${b}. Сколько будет ${a - 1} × ${b}?`, ab - b, [ab - 1, ab, ab - 2 * b, ab - b + 1], `Отними одну группу: ${ab} − ${b} = ?`, a < 7 ? [a - 1, b] : null); },
-  double: L => { const a = R(2, L.most), four = 4 * a; return num(`4 × ${a} = ${four}. Восьмёрка это две четвёрки. Сколько будет 8 × ${a}?`, 2 * four, [four, 2 * four + 8, 2 * four - 8, 2 * four + 1], `Удвой ответ: ${four} + ${four} = ?`); }
+  gap: L => { const { a, b, ab } = pair(L); return num(`? × ${b} = ${ab}`, a, [a + 1, a - 1, b, a + 2], `Прибавляй по ${b}, пока не дойдёшь до ${ab}. Считай, сколько раз прибавил.`, { help: seen(a, b) }); },
+  more: L => { const { a, b, ab } = pair(L, 2, L.most - 1); return num(`${a} × ${b} = ${ab}. Ещё одна группа: ${a + 1} × ${b} = ?`, ab + b, [ab + 1, ab, ab + 2 * b, ab + b + 1], `Прибавь одну группу: ${ab} + ${b} = ?`, { pic: seen(a + 1, b), voice: `${a} × ${b} = ${ab}. Добавь ещё одну группу по ${b}. Сколько будет ${a + 1} × ${b}?` }); },
+  less: L => { const { a, b, ab } = pair(L, 3); return num(`${a} × ${b} = ${ab}. Одной группы нет: ${a - 1} × ${b} = ?`, ab - b, [ab - 1, ab, ab - 2 * b, ab - b + 1], `Отними одну группу: ${ab} − ${b} = ?`, { pic: seen(a - 1, b), voice: `${a} × ${b} = ${ab}. Убери одну группу по ${b}. Сколько будет ${a - 1} × ${b}?` }); },
+  double: L => { const a = R(2, L.most), four = 4 * a; return num(`4 × ${a} = ${four}. Удвой: 8 × ${a} = ?`, 2 * four, [four, 2 * four + 8, 2 * four - 8, 2 * four + 1], `Удвой ответ: ${four} + ${four} = ?`, { voice: `4 × ${a} = ${four}. Восьмёрка это две четвёрки. Сколько будет 8 × ${a}?` }); }
 };
 const PLAN = [
   ['short', 'same', 'sum', 'times', 'up', 'share', 'more'],
@@ -461,10 +500,10 @@ function drawGroups(pic) {
   const box = $('taskPic');
   box.textContent = '';
   if (!pic) return;
-  const [a, b] = pic;
+  const [a, b, wide] = pic;
   for (let i = 0; i < a; i++) {
     const g = document.createElement('span');
-    g.style.setProperty('--n', b > 5 ? Math.ceil(b / 2) : b);
+    g.style.setProperty('--n', wide || (b > 5 ? Math.ceil(b / 2) : b));
     for (let j = 0; j < b; j++) g.appendChild(document.createElement('i'));
     box.appendChild(g);
   }
@@ -475,25 +514,28 @@ function ask(kicker, solved) {
   $('taskKicker').textContent = kicker;
   $('taskQ').textContent = t.q;
   $('taskHint').textContent = '';
-  drawGroups(null);
+  drawGroups(t.pic);
   box.textContent = '';
   shuffle([t.right, ...t.wrong]).forEach(a => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'ans'; b.textContent = a;
     b.addEventListener('click', () => {
       if (a === t.right) {
-        tone(660, .1, 'triangle', .08); tone(990, .16, 'triangle', .08, 0, .09);
+        hush(); tone(660, .1, 'triangle', .08); tone(990, .16, 'triangle', .08, 0, .09);
         show(null); solved();
       } else {
         G.misses++; b.disabled = true;
         $('taskHint').textContent = `Почти! ${t.hint}`;
-        drawGroups(t.pic);
+        drawGroups(t.help || t.pic);
         tone(180, .18, 'square', .04);
+        voiced(`Почти! ${t.hint}`);
       }
     });
     box.appendChild(b);
   });
   show('task');
+  spokenNow = t.voice || t.q;
+  voiced(spokenNow);
   const first = box.querySelector('button');
   if (first) first.focus({ preventScroll: true });
 }
@@ -512,6 +554,7 @@ function start(n) {
   document.querySelector('.map b').textContent = world.mark;
   show(null); $('hud').hidden = false; hud();
   say(`${world.say} ${world.tip}`, 5);
+  voiced(G.tut ? world.say : `${world.say} ${world.tip}`);
 }
 
 function toMap() {
@@ -562,6 +605,7 @@ function caught() {
   G.mode = 'caught'; input.up = input.down = false;
   $('caughtTitle').textContent = CAUGHT[G.lastBy] || CAUGHT.shark;
   tone(220, .5, 'sawtooth', .07, 70);
+  voiced($('caughtTitle').textContent);
   show('caught');
   $('againBtn').focus({ preventScroll: true });
 }
@@ -598,7 +642,7 @@ function nextKnot() {
     if (world.id === 'pirate') { G.shake = 9; burst(k.x, k.y, 'bubble', 14); tone(120, .3, 'sawtooth', .08, 60); }
     else tone(300, .2, 'square', .05, 900);
     if (F.knots) setTimeout(nextKnot, 800);
-    else { F.phase = 'free'; F.t = 0; fanfare(); say(world.freed, 3); }
+    else { F.phase = 'free'; F.t = 0; fanfare(); say(world.freed, 3); voiced(world.freed); }
   });
 }
 
@@ -1524,6 +1568,7 @@ function drawFinal() {
 function drawTutorial() {
   if (G.tut <= 0) return;
   const lines = G.tut > 5.5 ? 'Держи вверх, и ботинки полетят' : G.tut > 3 ? 'Держи вниз, и ты нырнёшь за щитом' : 'Отпусти, и ты побежишь по воде';
+  if (lines !== G.tutLine) { G.tutLine = lines; voiced(lines, true); }
   c.globalAlpha = clamp(G.tut * 2, 0, 1);
   bubble(W / 2, SEA - 56, lines);
   c.globalAlpha = 1;
@@ -1605,19 +1650,22 @@ cv.addEventListener('pointerdown', e => { if (G.mode !== 'play') return; cv.setP
 cv.addEventListener('pointermove', e => { if (input.up || input.down) aim(e); });
 ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(n => cv.addEventListener(n, () => { input.up = input.down = false; }));
 addEventListener('blur', () => { input.up = input.down = false; });
-document.addEventListener('visibilitychange', () => { if (document.hidden) setPause(true); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { setPause(true); hush(); } });
 
 $('startForm').addEventListener('submit', e => {
   e.preventDefault();
   const f = new FormData(e.target);
   heroName = String(f.get('who') || '').trim();
   diff = +f.get('diff'); boots = f.get('boots');
+  voiceOn = $('voiceBox').checked;
   saveMe();
+  if (synth && ruVoice) speak(' ');
   if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (err) {} }
   if (audio && audio.state === 'suspended') audio.resume();
   fanfare();
   toMap();
 });
+$('sayBtn').addEventListener('click', () => speak(spokenNow));
 $('againBtn').addEventListener('click', respawn);
 $('resumeBtn').addEventListener('click', () => setPause(false));
 $('pauseBtn').addEventListener('click', () => { setPause(G.mode === 'play'); });
@@ -1639,6 +1687,7 @@ function restore() {
     if (!s) return;
     const h = HEROES.find(q => q.id === s.hero);
     if (h && h.after <= wins()) hero = h;
+    if (s.voiceOn === false) { voiceOn = false; $('voiceBox').checked = false; }
     $('who').value = s.heroName || '';
     const d = document.querySelector(`input[name=diff][value="${s.diff}"]`); if (d) d.checked = true;
     const b = document.querySelector(`input[name=boots][value="${s.boots}"]`); if (b) b.checked = true;
@@ -1649,6 +1698,7 @@ G = fresh();
 new ResizeObserver(resize).observe(cv.parentElement);
 resize();
 restore();
+pickVoice();
 requestAnimationFrame(frame);
 })();
 </script>
