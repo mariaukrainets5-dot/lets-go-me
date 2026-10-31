@@ -31,11 +31,11 @@ head, body = page.split('<div id="game">', 1)
     HEAD + head + '</head>\n<body>\n<div id="game">' + body + SW + "</body>\n</html>\n", encoding="utf-8"
 )
 
-# Pokemon I Will Catch You lives next to the main game at /pokemon/.
-pokemon = (root / "pokemon" / "index.html").read_text(encoding="utf-8")
-head, body = pokemon.split('<canvas id="c"', 1)
-(root / "docs" / "pokemon").mkdir(exist_ok=True)
-(root / "docs" / "pokemon" / "index.html").write_text(
+# I Will Catch You lives next to the main game at /catch/.
+game = (root / "catch" / "index.html").read_text(encoding="utf-8")
+head, body = game.split('<canvas id="c"', 1)
+(root / "docs" / "catch").mkdir(exist_ok=True)
+(root / "docs" / "catch" / "index.html").write_text(
     '<!doctype html>\n<html lang="ru">\n<head>\n' + head + '</head>\n<body>\n<canvas id="c"' + body + "</body>\n</html>\n",
     encoding="utf-8",
 )
